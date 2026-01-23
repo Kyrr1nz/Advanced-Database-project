@@ -6,7 +6,7 @@ services:
     container_name: student_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: student_db
       MYSQL_USER: student_user
       MYSQL_PASSWORD: student123
