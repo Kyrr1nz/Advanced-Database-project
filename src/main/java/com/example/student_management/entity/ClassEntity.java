@@ -1,34 +1,59 @@
 package com.example.student_management.entity;
 
-import jakarta.persistence.*;
+import java.util.Set;
+import java.util.HashSet;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "class")
+@Table(name = "classes")
 public class ClassEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long classId;
+    private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "class_name", nullable = false)
     private String className;
 
+    @Column(name = "course_year")
     private Integer courseYear;
 
+    // 🔗 class → manager (N:1)
     @ManyToOne
     @JoinColumn(name = "mid")
     private Manager manager;
 
-    // Constructors
-    public ClassEntity() {}
+    // 🔗 class ↔ subject (N:N) qua bảng have
+    @ManyToMany
+    @JoinTable(
+            name = "have",
+            joinColumns = @JoinColumn(name = "class_id"),
+            inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> subjects = new HashSet<>();
 
-    // Getter & Setter
-    public Long getClassId() {
-        return classId;
+    // ===== Constructors =====
+    protected ClassEntity() {
     }
 
-    public void setClassId(Long classId) {
-        this.classId = classId;
+    public ClassEntity(String className, Integer courseYear) {
+        this.className = className;
+        this.courseYear = courseYear;
+    }
+
+    // ===== Getter & Setter =====
+    public Long getId() {
+        return id;
     }
 
     public String getClassName() {
@@ -53,5 +78,13 @@ public class ClassEntity {
 
     public void setManager(Manager manager) {
         this.manager = manager;
+    }
+
+    public Set<Subject> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(Set<Subject> subjects) {
+        this.subjects = subjects;
     }
 }

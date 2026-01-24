@@ -1,9 +1,7 @@
 package com.example.student_management.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.student_management.entity.Student;
+import com.example.student_management.service.StudentService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -18,30 +16,51 @@ import com.vaadin.flow.router.Route;
 @Route("")
 public class MainView extends VerticalLayout {
 
+    // ===== Service =====
+    private final StudentService studentService;
+
     // ===== Input fields =====
     private TextField nameField  = new TextField("Họ tên");
     private TextField emailField = new TextField("Email");
     private DatePicker dobField  = new DatePicker("Ngày sinh");
-
     private ComboBox<String> genderField = new ComboBox<>("Giới tính");
     private TextField phoneField  = new TextField("Số điện thoại");
 
     // ===== Grid =====
     private Grid<Student> grid = new Grid<>(Student.class, false);
 
-    // ===== In-memory list =====
-    private List<Student> students = new ArrayList<>();
-
-    public MainView() {
+    public MainView(StudentService studentService) {
+        this.studentService = studentService;
 
         setSizeFull();
         setPadding(true);
 
-        // ===== Gender =====
+        configureForm();
+        configureGrid();
+
+        Button addButton = new Button("Thêm sinh viên", e -> addStudent());
+        Button deleteButton = new Button("Xóa sinh viên", e -> deleteStudent());
+
+        HorizontalLayout buttonLayout =
+                new HorizontalLayout(addButton, deleteButton);
+
+        add(
+                createFormLayout(),
+                buttonLayout,
+                grid
+        );
+
+        refreshGrid();
+    }
+
+    // ================= CONFIG =================
+
+    private void configureForm() {
         genderField.setItems("Nam", "Nữ");
         genderField.setPlaceholder("Chọn giới tính");
+    }
 
-        // ===== Form layout (ngang, đẹp) =====
+    private FormLayout createFormLayout() {
         FormLayout formLayout = new FormLayout(
                 nameField,
                 emailField,
@@ -55,14 +74,10 @@ public class MainView extends VerticalLayout {
                 new FormLayout.ResponsiveStep("600px", 2)
         );
 
-        // ===== Buttons =====
-        Button addButton = new Button("Thêm sinh viên");
-        Button deleteButton = new Button("Xóa sinh viên đã chọn");
+        return formLayout;
+    }
 
-        HorizontalLayout buttonLayout =
-                new HorizontalLayout(addButton, deleteButton);
-
-        // ===== Grid columns =====
+    private void configureGrid() {
         grid.addColumn(Student::getId).setHeader("Mã SV");
         grid.addColumn(Student::getFullName).setHeader("Họ tên");
         grid.addColumn(Student::getEmail).setHeader("Email");
@@ -72,41 +87,45 @@ public class MainView extends VerticalLayout {
 
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setSizeFull();
+    }
 
-        // ===== Add student =====
-        addButton.addClickListener(e -> {
-            Student student = new Student();
-            student.setFullName(nameField.getValue());
-            student.setEmail(emailField.getValue());
-            student.setDob(dobField.getValue());
-            student.setGender(genderField.getValue());
-            student.setPhoneNumber(phoneField.getValue());
+    // ================= ACTIONS =================
 
-            students.add(student);
-            grid.setItems(students);
+    private void addStudent() {
+        if (nameField.isEmpty() || emailField.isEmpty()) {
+            Notification.show("Tên và email không được để trống");
+            return;
+        }
 
-            clearForm();
-            Notification.show("Đã thêm sinh viên (UI only)");
-        });
-
-        // ===== Delete student =====
-        deleteButton.addClickListener(e -> {
-            Student selected = grid.asSingleSelect().getValue();
-            if (selected != null) {
-                students.remove(selected);
-                grid.setItems(students);
-                Notification.show("Đã xóa sinh viên");
-            } else {
-                Notification.show("Vui lòng chọn sinh viên cần xóa");
-            }
-        });
-
-        // ===== Main layout =====
-        add(
-                formLayout,
-                buttonLayout,
-                grid
+        Student student = new Student(
+                nameField.getValue(),
+                emailField.getValue(),
+                dobField.getValue(),
+                genderField.getValue(),
+                phoneField.getValue()
         );
+
+        studentService.save(student);
+        refreshGrid();
+        clearForm();
+
+        Notification.show("Đã thêm sinh viên");
+    }
+
+    private void deleteStudent() {
+        Student selected = grid.asSingleSelect().getValue();
+        if (selected == null) {
+            Notification.show("Vui lòng chọn sinh viên");
+            return;
+        }
+
+        studentService.deleteById(selected.getId());
+        refreshGrid();
+        Notification.show("Đã xóa sinh viên");
+    }
+
+    private void refreshGrid() {
+        grid.setItems(studentService.findAll());
     }
 
     private void clearForm() {
@@ -117,4 +136,3 @@ public class MainView extends VerticalLayout {
         phoneField.clear();
     }
 }
-

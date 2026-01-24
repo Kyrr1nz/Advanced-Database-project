@@ -2,6 +2,7 @@ package com.example.student_management.entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -10,62 +11,89 @@ public class ExamSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long esid;
+    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String esName;
+    @Column(name = "exam_date", nullable = false)
+    private LocalDate examDate;
 
-    private LocalDate esDate;
-    private LocalTime esTime;
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
 
-    private String esCourse;
+    @Column(name = "end_time", nullable = false)
+    private LocalTime endTime;
 
-    @ManyToOne
-    @JoinColumn(name = "mid")
+    @Column(name = "room", length = 50)
+    private String room;
+
+    // =========================
+    // ExamSchedule -> Manager (N-1)
+    // =========================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mid", nullable = false)
     private Manager manager;
 
-    // Constructors
-    public ExamSchedule() {}
+    // =========================
+    // ExamSchedule -> Subject (N-1)
+    // =========================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
 
-    // Getter & Setter
-    public Long getEsid() {
-        return esid;
+    // ===== Constructors =====
+    protected ExamSchedule() {
     }
 
-    public void setEsid(Long esid) {
-        this.esid = esid;
+    public ExamSchedule(
+            LocalDate examDate,
+            LocalTime startTime,
+            LocalTime endTime,
+            String room,
+            Manager manager,
+            Subject subject
+    ) {
+        this.examDate = examDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.room = room;
+        this.manager = manager;
+        this.subject = subject;
     }
 
-    public String getEsName() {
-        return esName;
+    // ===== Getter & Setter =====
+    public Long getId() {
+        return id;
     }
 
-    public void setEsName(String esName) {
-        this.esName = esName;
+    public LocalDate getExamDate() {
+        return examDate;
     }
 
-    public LocalDate getEsDate() {
-        return esDate;
+    public void setExamDate(LocalDate examDate) {
+        this.examDate = examDate;
     }
 
-    public void setEsDate(LocalDate esDate) {
-        this.esDate = esDate;
+    public LocalTime getStartTime() {
+        return startTime;
     }
 
-    public LocalTime getEsTime() {
-        return esTime;
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
     }
 
-    public void setEsTime(LocalTime esTime) {
-        this.esTime = esTime;
+    public LocalTime getEndTime() {
+        return endTime;
     }
 
-    public String getEsCourse() {
-        return esCourse;
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
     }
 
-    public void setEsCourse(String esCourse) {
-        this.esCourse = esCourse;
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
     }
 
     public Manager getManager() {
@@ -74,5 +102,13 @@ public class ExamSchedule {
 
     public void setManager(Manager manager) {
         this.manager = manager;
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public void setSubject(Subject subject) {
+        this.subject = subject;
     }
 }

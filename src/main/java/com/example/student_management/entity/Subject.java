@@ -1,6 +1,8 @@
 package com.example.student_management.entity;
 
-import java.time.LocalDate;
+import java.util.Set;
+import java.util.HashSet;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,32 +11,44 @@ public class Subject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long subjectId;
+    private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "subject_name", nullable = false)
     private String subjectName;
 
-    private Integer credits;
-    private LocalDate sStartDate;
-    private LocalDate sEndDate;
+    @Column(name = "credit")
+    private Integer credit;
 
-    @Column(length = 50)
-    private String sType;
+    // =========================
+    // Student <-> Subject (N-N)
+    // inverse side of SIGN
+    // =========================
+    @ManyToMany(mappedBy = "subjects")
+    private Set<Student> students = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "sid")
-    private Student student;
+    // =========================
+    // Class <-> Subject (N-N)
+    // join table: HAVE
+    // =========================
+    @ManyToMany
+    @JoinTable(
+            name = "have",
+            joinColumns = @JoinColumn(name = "subject_id"),
+            inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    private Set<ClassEntity> classes = new HashSet<>();
 
-    // Constructors
-    public Subject() {}
+    // ===== Constructors =====
+    protected Subject() {}
 
-    // Getter & Setter
-    public Long getSubjectId() {
-        return subjectId;
+    public Subject(String subjectName, Integer credit) {
+        this.subjectName = subjectName;
+        this.credit = credit;
     }
 
-    public void setSubjectId(Long subjectId) {
-        this.subjectId = subjectId;
+    // ===== Getter & Setter =====
+    public Long getId() {
+        return id;
     }
 
     public String getSubjectName() {
@@ -45,43 +59,19 @@ public class Subject {
         this.subjectName = subjectName;
     }
 
-    public Integer getCredits() {
-        return credits;
+    public Integer getCredit() {
+        return credit;
     }
 
-    public void setCredits(Integer credits) {
-        this.credits = credits;
+    public void setCredit(Integer credit) {
+        this.credit = credit;
     }
 
-    public LocalDate getsStartDate() {
-        return sStartDate;
+    public Set<Student> getStudents() {
+        return students;
     }
 
-    public void setsStartDate(LocalDate sStartDate) {
-        this.sStartDate = sStartDate;
-    }
-
-    public LocalDate getsEndDate() {
-        return sEndDate;
-    }
-
-    public void setsEndDate(LocalDate sEndDate) {
-        this.sEndDate = sEndDate;
-    }
-
-    public String getsType() {
-        return sType;
-    }
-
-    public void setsType(String sType) {
-        this.sType = sType;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
+    public Set<ClassEntity> getClasses() {
+        return classes;
     }
 }

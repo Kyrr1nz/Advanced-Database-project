@@ -1,41 +1,61 @@
 package com.example.student_management.entity;
 
 import java.time.LocalDate;
+import java.util.Set;
+import java.util.HashSet;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "students")
+@Table(
+        name = "students",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")
+        }
+)
 public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
+    @Column(name = "dob")
     private LocalDate dob;
 
     @Column(length = 10)
     private String gender;
 
-    @Column(length = 15)
+    @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
-    // ===== Constructors =====
-    public Student() {
-    }
+    // =========================
+    // Student <-> Subject (N-N)
+    // join table: SIGN
+    // =========================
+    @ManyToMany
+    @JoinTable(
+            name = "sign",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> subjects = new HashSet<>();
 
-    public Student(String fullName, String email, LocalDate dob, String gender, String phoneNumber) {
+    // ===== Constructors =====
+    protected Student() {}
+
+    public Student(
+            String fullName,
+            String email,
+            LocalDate dob,
+            String gender,
+            String phoneNumber
+    ) {
         this.fullName = fullName;
         this.email = email;
         this.dob = dob;
@@ -48,47 +68,27 @@ public class Student {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getFullName() {
         return fullName;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
     public String getEmail() {
         return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public LocalDate getDob() {
         return dob;
     }
 
-    public void setDob(LocalDate dob) {
-        this.dob = dob;
-    }
-
     public String getGender() {
         return gender;
-    }
-    
-    public void setGender(String gender) {
-        this.gender = gender;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
     }
-    
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+
+    public Set<Subject> getSubjects() {
+        return subjects;
     }
 }
