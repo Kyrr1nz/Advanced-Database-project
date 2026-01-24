@@ -1,4 +1,4 @@
-﻿package com.example.student_management.entity;
+package com.example.student_management.entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -1,4 +1,4 @@
-﻿package com.example.student_management.service;
+package com.example.student_management.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;

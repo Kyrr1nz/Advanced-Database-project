@@ -103,9 +103,9 @@ public class MainView extends VerticalLayout {
 
         // ===== Main layout =====
         add(
-            formLayout,
-            buttonLayout,
-            grid
+                formLayout,
+                buttonLayout,
+                grid
         );
     }
 
@@ -117,3 +117,4 @@ public class MainView extends VerticalLayout {
         phoneField.clear();
     }
 }
+
