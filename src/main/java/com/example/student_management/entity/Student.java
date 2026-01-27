@@ -1,69 +1,47 @@
-package com.example.student_management.entity;
+﻿package com.example.student_management.entity;
 
 import java.time.LocalDate;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(
-        name = "students",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email")
-        }
-)
+@Table(name = "students")
 public class Student {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name", nullable = false)
     private String fullName;
-
-    @Column(nullable = false)
     private String email;
-
-    @Column(name = "dob")
+    private String phoneNumber;
+    private String gender;
     private LocalDate dob;
 
-    @Column(length = 10)
-    private String gender;
+    @Column(unique = true)
+    private String mssv;
 
-    @Column(name = "phone_number", length = 15)
-    private String phoneNumber;
+    // Nối với Clazz để lấy tên lớp/ngành ở Layer 1
+    @ManyToOne
+    @JoinColumn(name = "class_id")
+    private ClassEntity clazz;
 
-    // =========================
-    // Student <-> Subject (N-N)
-    // join table: SIGN
-    // =========================
-    @ManyToMany
-    @JoinTable(
-            name = "sign",
-            joinColumns = @JoinColumn(name = "student_id"),
-            inverseJoinColumns = @JoinColumn(name = "subject_id")
-    )
-    private Set<Subject> subjects = new HashSet<>();
+    // Nối với Enrollment để đi đến Subject/Teacher ở Layer 2
+    @OneToMany(mappedBy = "student")
+    private List<Enrollment> enrollments;
 
-    // ===== Constructors =====
-    protected Student() {}
-
-    public Student(
-            String fullName,
-            String email,
-            LocalDate dob,
-            String gender,
-            String phoneNumber
-    ) {
-        this.fullName = fullName;
-        this.email = email;
-        this.dob = dob;
-        this.gender = gender;
-        this.phoneNumber = phoneNumber;
+    public Student() {
     }
 
-    // ===== Getter & Setter =====
+    // Getters & Setters bắt buộc để UI không bị lỗi đỏ
     public Long getId() {
         return id;
     }
@@ -72,23 +50,33 @@ public class Student {
         return fullName;
     }
 
+    public ClassEntity getClazz() {
+        return clazz;
+    }
+    public String getMssv() {
+        return mssv;
+    }
+    public void setMssv(String mssv){
+        this.mssv = mssv;
+    }
+
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
     public String getEmail() {
         return email;
     }
 
-    public LocalDate getDob() {
-        return dob;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    public String getGender() {
-        return gender;
+    public void setClazz(ClassEntity clazz) {
+        this.clazz = clazz;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public Set<Subject> getSubjects() {
-        return subjects;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
