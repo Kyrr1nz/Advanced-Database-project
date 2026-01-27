@@ -1,28 +1,21 @@
 package com.example.student_management.service;
 
-import java.util.List;
-import org.springframework.stereotype.Service;
 import com.example.student_management.entity.Subject;
 import com.example.student_management.repository.SubjectRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class SubjectService {
 
-    private final SubjectRepository subjectRepository;
+    private final SubjectRepository repository;
 
-    public SubjectService(SubjectRepository subjectRepository) {
-        this.subjectRepository = subjectRepository;
+    public SubjectService(SubjectRepository repository) {
+        this.repository = repository;
     }
 
     public List<Subject> findAll() {
-        return subjectRepository.findAll();
-    }
-
-    public Subject save(Subject subject) {
-        return subjectRepository.save(subject);
-    }
-
-    public void deleteById(Long id) {
-        subjectRepository.deleteById(id);
+        return repository.findAll();
     }
 }

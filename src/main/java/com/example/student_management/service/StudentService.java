@@ -1,30 +1,40 @@
 package com.example.student_management.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.example.student_management.entity.Student;
+import com.example.student_management.entity.Enrollment;
 import com.example.student_management.repository.StudentRepository;
+import com.example.student_management.repository.EnrollmentRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentService {
 
-    private final StudentRepository studentRepository;
+    @Autowired
+    private StudentRepository studentRepository;
 
-    public StudentService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+
+    // Lấy tổng số sinh viên cho màn hình Dashboard
+    public long countStudents() {
+        return studentRepository.count();
     }
 
-    public List<Student> findAll() {
-        return studentRepository.findAll();
+    // Lấy danh sách kèm thông tin Lớp/Ngành cho Layer 1
+    public List<Student> findAllForList() {
+        return studentRepository.findAllWithBasicInfo();
     }
 
-    public Student save(Student student) {
-        return studentRepository.save(student);
+    // Lấy hồ sơ chi tiết (Môn học, Giảng viên, Lịch thi...) cho Layer 2
+    public List<Enrollment> getStudentFullProfile(Long studentId) {
+        return enrollmentRepository.findFullDetailsByStudentId(studentId);
     }
 
-    public void deleteById(Long id) {
-        studentRepository.deleteById(id);
+    public Optional<Student> findById(Long id) {
+        return studentRepository.findById(id);
     }
 }
