@@ -1,17 +1,8 @@
-﻿package com.example.student_management.entity;
+package com.example.student_management.entity;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "students")
@@ -32,11 +23,11 @@ public class Student {
     // Nối với Clazz để lấy tên lớp/ngành ở Layer 1
     @ManyToOne
     @JoinColumn(name = "class_id")
-    private ClassEntity clazz;
+    private com.example.student_management.entity.ClassEntity clazz;
 
     // Nối với Enrollment để đi đến Subject/Teacher ở Layer 2
     @OneToMany(mappedBy = "student")
-    private List<Enrollment> enrollments;
+    private List<com.example.student_management.entity.Enrollment> enrollments;
 
     public Student() {
     }
@@ -50,7 +41,7 @@ public class Student {
         return fullName;
     }
 
-    public ClassEntity getClazz() {
+    public com.example.student_management.entity.ClassEntity getClazz() {
         return clazz;
     }
     public String getMssv() {
@@ -60,7 +51,7 @@ public class Student {
         this.mssv = mssv;
     }
 
-    public List<Enrollment> getEnrollments() {
+    public List<com.example.student_management.entity.Enrollment> getEnrollments() {
         return enrollments;
     }
 
@@ -72,7 +63,7 @@ public class Student {
         this.fullName = fullName;
     }
 
-    public void setClazz(ClassEntity clazz) {
+    public void setClazz(com.example.student_management.entity.ClassEntity clazz) {
         this.clazz = clazz;
     }
 
