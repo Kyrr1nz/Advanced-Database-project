@@ -37,7 +37,6 @@ public class ClassDetailView extends VerticalLayout implements HasUrlParameter<L
     public void setParameter(BeforeEvent event, Long classId) {
         container.removeAll();
 
-        // Giả sử classService có hàm findById trả về Optional hoặc ClassEntity
         classService.findById(classId).ifPresent(classEntity -> {
 
             // Tiêu đề lớp học
@@ -51,7 +50,6 @@ public class ClassDetailView extends VerticalLayout implements HasUrlParameter<L
             // Bảng danh sách sinh viên trong lớp
             Grid<Student> studentGrid = new Grid<>(Student.class, false);
 
-            // Hiển thị Mã sinh viên và Họ tên theo yêu cầu của Khang
             studentGrid.addColumn(Student::getMssv)
                     .setHeader("MSSV")
                     .setAutoWidth(true)
@@ -66,8 +64,14 @@ public class ClassDetailView extends VerticalLayout implements HasUrlParameter<L
                     .setHeader("Email")
                     .setAutoWidth(true);
 
-            // Lấy danh sách sinh viên từ quan hệ của ClassEntity
-            // Lưu ý: Đảm bảo trong Entity ClassEntity có: List<Student> getStudents()
+            // Khi ấn vào một dòng trong bảng, điều hướng sang StudentProfileView với ID tương ứng
+            studentGrid.addItemClickListener(clickEvent -> {
+                Long studentId = clickEvent.getItem().getId();
+                UI.getCurrent().navigate(StudentProfileView.class, studentId);
+            });
+
+            studentGrid.getStyle().set("cursor", "pointer");
+
             studentGrid.setItems(classEntity.getStudents());
             studentGrid.setAllRowsVisible(true);
 

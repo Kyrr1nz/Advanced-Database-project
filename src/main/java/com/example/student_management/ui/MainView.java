@@ -70,7 +70,7 @@ public class MainView extends VerticalLayout {
         content.add(new Paragraph("Group  : 7"));
 
         UnorderedList members = new UnorderedList(
-                new ListItem("Bảo Khang (Leader)"),
+                new ListItem("Bảo Khang"),
                 new ListItem("Đình Quốc"),
                 new ListItem("Duy Thành"),
                 new ListItem("Đình Phước")

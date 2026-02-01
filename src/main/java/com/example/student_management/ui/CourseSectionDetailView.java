@@ -28,16 +28,16 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
     public CourseSectionDetailView(CourseSectionRepository csRepo) {
         this.csRepo = csRepo;
 
-        // Nút quay lại để không bị "kẹt" ở trang này
+        // Nút quay lại linh hoạt
         Button backBtn = new Button("⬅ Quay lại trang chủ", e -> UI.getCurrent().navigate(""));
 
         add(backBtn, new H2("Chi tiết Lớp học phần"), infoContainer, studentGrid);
 
-        // Cấu hình Grid một lần duy nhất trong Constructor
         configureGrid();
     }
 
     private void configureGrid() {
+        // Cột hiển thị MSSV từ database
         studentGrid.addColumn(Student::getMssv).setHeader("MSSV").setAutoWidth(true).setSortable(true);
         studentGrid.addColumn(Student::getFullName).setHeader("Họ Tên").setAutoWidth(true).setSortable(true);
         studentGrid.addColumn(s -> s.getClazz() != null ? s.getClazz().getClassName() : "N/A")
@@ -45,6 +45,14 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
         studentGrid.addColumn(s -> (s.getClazz() != null && s.getClazz().getMajor() != null)
                         ? s.getClazz().getMajor().getMajorName() : "N/A")
                 .setHeader("Chuyên ngành");
+
+        // Khi click vào bất kỳ sinh viên nào trong danh sách sinh viên
+        studentGrid.addItemClickListener(event -> {
+            Long studentId = event.getItem().getId();
+            UI.getCurrent().navigate(StudentProfileView.class, studentId);
+        });
+
+        studentGrid.getStyle().set("cursor", "pointer");
     }
 
     @Override
@@ -52,7 +60,6 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
         csRepo.findById(sectionId).ifPresent(section -> {
             infoContainer.removeAll();
 
-            // Hiện thông tin lớp & giảng viên
             String subName = section.getSubject() != null ? section.getSubject().getSubjectName() : "N/A";
             String teaName = section.getTeacher() != null ? section.getTeacher().getFullName() : "Chưa phân công";
 
@@ -63,7 +70,7 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
                     new Span("👥 Sĩ số: " + (section.getEnrollments() != null ? section.getEnrollments().size() : 0))
             );
 
-            // LOGIC LẤY SINH VIÊN: Chuyển từ Enrollment sang Student
+            // Chuyển đổi từ danh sách Enrollment sang danh sách Student để hiển thị
             if (section.getEnrollments() != null) {
                 List<Student> students = section.getEnrollments().stream()
                         .map(Enrollment::getStudent)
