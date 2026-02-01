@@ -6,6 +6,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Configuration
@@ -17,63 +19,96 @@ public class Dataset {
                                TeacherRepository tRepo, CourseSectionRepository csRepo,
                                EnrollmentRepository eRepo, ExamRepository exRepo) {
         return args -> {
-            // 1. Tạo Ngành học
-            Major it = new Major(); it.setMajorName("Công nghệ thông tin"); mRepo.save(it);
-            Major biz = new Major(); biz.setMajorName("Quản trị kinh doanh"); mRepo.save(biz);
-            Major mkt = new Major(); mkt.setMajorName("Marketing"); mRepo.save(mkt);
+            // 1. Tạo Ngành học đa dạng
+            Major it = saveMajor(mRepo, "Công nghệ thông tin");
+            Major biz = saveMajor(mRepo, "Quản trị kinh doanh");
+            Major mkt = saveMajor(mRepo, "Marketing");
+            Major log = saveMajor(mRepo, "Logistics & Chuỗi cung ứng");
+            Major design = saveMajor(mRepo, "Thiết kế đồ họa");
 
-            // 2. Tạo Lớp hành chính
-            ClassEntity classIT = new ClassEntity(); classIT.setClassName("IT-K15"); classIT.setMajor(it); cRepo.save(classIT);
-            ClassEntity classBA = new ClassEntity(); classBA.setClassName("BA-K15"); classBA.setMajor(biz); cRepo.save(classBA);
-            ClassEntity classMKT = new ClassEntity(); classMKT.setClassName("MKT-K15"); classMKT.setMajor(mkt); cRepo.save(classMKT);
+            // 2. Tạo Lớp hành chính theo khóa K15
+            ClassEntity c1 = saveClass(cRepo, "IT-K15", it);
+            ClassEntity c2 = saveClass(cRepo, "BA-K15", biz);
+            ClassEntity c3 = saveClass(cRepo, "MKT-K15", mkt);
+            ClassEntity c4 = saveClass(cRepo, "LOG-K15", log);
+            ClassEntity c5 = saveClass(cRepo, "DS-K15", design);
 
-            // 3. Tạo Giảng viên & Môn học
-            Teacher t1 = new Teacher(); t1.setFullName("Thầy Bình Vaadin"); tRepo.save(t1);
-            Teacher t2 = new Teacher(); t2.setFullName("Cô Lan MySQL"); tRepo.save(t2);
+            // 3. Tạo Giảng viên với học vị
+            Teacher t1 = saveTeacher(tRepo, "TS. Nguyễn Văn Bình");
+            Teacher t2 = saveTeacher(tRepo, "ThS. Lê Thị Lan");
+            Teacher t3 = saveTeacher(tRepo, "PGS.TS Hoàng Nam");
+            Teacher t4 = saveTeacher(tRepo, "ThS. Đặng Thu Thảo");
 
-            Subject sub1 = new Subject(); sub1.setSubjectName("Lập trình Java"); subRepo.save(sub1);
-            Subject sub2 = new Subject(); sub2.setSubjectName("Cơ sở dữ liệu"); subRepo.save(sub2);
+            // 4. Tạo Môn học
+            Subject sub1 = saveSubject(subRepo, "Lập trình Java nâng cao");
+            Subject sub2 = saveSubject(subRepo, "Cơ sở dữ liệu MySQL");
+            Subject sub3 = saveSubject(subRepo, "Kỹ năng giao tiếp");
+            Subject sub4 = saveSubject(subRepo, "Kinh tế vi mô");
 
-            // 4. Tạo Lớp học phần (Course Sections)
-            CourseSection secJava = new CourseSection();
-            secJava.setSubject(sub1); secJava.setTeacher(t1); secJava.setSemester("Học kỳ 2");
-            secJava.setStartDate(LocalDate.of(2023, 2, 8)); secJava.setEndDate(LocalDate.of(2023, 5, 8));
-            csRepo.save(secJava);
+            // 5. Tạo Lớp học phần (Course Sections)
+            CourseSection secJava = saveSection(csRepo, sub1, t1, "2023-02-08", "2023-05-08");
+            CourseSection secSQL = saveSection(csRepo, sub2, t2, "2023-03-01", "2023-06-01");
+            CourseSection secSoftSkill = saveSection(csRepo, sub3, t4, "2023-02-15", "2023-05-15");
 
-            CourseSection secSQL = new CourseSection();
-            secSQL.setSubject(sub2); secSQL.setTeacher(t2); secSQL.setSemester("Học kỳ 2");
-            secSQL.setStartDate(LocalDate.of(2023, 3, 1)); secSQL.setEndDate(LocalDate.of(2023, 6, 1));
-            csRepo.save(secSQL);
-
-            // 5. Vòng lặp tạo 30 Sinh viên và Đăng ký chéo
-            String[] ho = {"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Phan"};
-            String[] ten = {"Khang", "Nam", "Triết", "Bưởi", "Thái", "An", "Bình", "Chi", "Dũng", "Hà"};
+            // 6. Tạo 50 Sinh viên với đầy đủ thông tin
+            String[] hos = {"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Phan", "Đỗ", "Bùi", "Đặng"};
+            String[] dem = {"Văn", "Thị", "Duy", "Minh", "Thu", "Hồng", "Thanh", "Anh"};
+            String[] tens = {"Khang", "Nam", "Triết", "Bưởi", "Thái", "An", "Bình", "Chi", "Dũng", "Hà", "Linh", "Quân"};
             Random rand = new Random();
+            List<ClassEntity> classes = List.of(c1, c2, c3, c4, c5);
 
-            for (int i = 1; i <= 30; i++) {
+            for (int i = 1; i <= 50; i++) {
                 Student s = new Student();
                 s.setMssv(String.format("SV%03d", i));
-                s.setFullName(ho[rand.nextInt(ho.length)] + " " + ten[rand.nextInt(ten.length)]);
-                s.setEmail("sv" + i + "@example.com");
 
-                // Chia sinh viên vào các lớp khác nhau
-                if (i <= 10) s.setClazz(classIT);
-                else if (i <= 20) s.setClazz(classBA);
-                else s.setClazz(classMKT);
+                String gender = rand.nextBoolean() ? "Nam" : "Nữ";
+                String hoTen = hos[rand.nextInt(hos.length)] + " " + dem[rand.nextInt(dem.length)] + " " + tens[rand.nextInt(tens.length)];
+
+                s.setFullName(hoTen);
+                s.setGender(gender); // Tự động gán giới tính
+                s.setEmail("sv" + i + "@university.edu.vn");
+                s.setPhoneNumber("09" + (10000000 + rand.nextInt(90000000))); // SĐT ngẫu nhiên
+                s.setClazz(classes.get(rand.nextInt(classes.size())));
 
                 sRepo.save(s);
 
-                // LOGIC ĐĂNG KÝ: Cho các ngành học chung với nhau
-                // SV 1-20 học Java (Gồm IT và Kinh doanh học chung)
-                if (i <= 20) {
-                    eRepo.save(new Enrollment(s, secJava));
-                }
-                // SV 11-30 học MySQL (Gồm Kinh doanh và Marketing học chung)
-                if (i >= 11) {
-                    eRepo.save(new Enrollment(s, secSQL));
-                }
+                // Đăng ký học phần chéo (Mỗi SV học 2 môn ngẫu nhiên)
+                eRepo.save(new Enrollment(s, secSoftSkill)); // Môn kỹ năng mềm ai cũng học
+                if (i % 2 == 0) eRepo.save(new Enrollment(s, secJava));
+                else eRepo.save(new Enrollment(s, secSQL));
             }
-            System.out.println(">>> Hệ thống Khang Á: Đã nạp 30 sinh viên và đăng ký học phần chéo!");
+
+            // 7. Tạo Lịch thi cho các môn
+            saveExam(exRepo, secJava, "2023-05-15", "P.402-A1");
+            saveExam(exRepo, secSQL, "2023-06-10", "P.Lab-02");
+            saveExam(exRepo, secSoftSkill, "2023-05-20", "Hội trường G");
+
+            System.out.println(">>> Hệ thống Khang Á: Đã nạp 50 sinh viên đa ngành và lịch thi!");
         };
+    }
+
+    // --- CÁC HÀM TRỢ GIÚP (HELPERS) ---
+    private Major saveMajor(MajorRepository repo, String name) {
+        Major m = new Major(); m.setMajorName(name); return repo.save(m);
+    }
+    private ClassEntity saveClass(ClassRepository repo, String name, Major m) {
+        ClassEntity c = new ClassEntity(); c.setClassName(name); c.setMajor(m); return repo.save(c);
+    }
+    private Teacher saveTeacher(TeacherRepository repo, String name) {
+        Teacher t = new Teacher(); t.setFullName(name); return repo.save(t);
+    }
+    private Subject saveSubject(SubjectRepository repo, String name) {
+        Subject s = new Subject(); s.setSubjectName(name); return repo.save(s);
+    }
+    private CourseSection saveSection(CourseSectionRepository repo, Subject s, Teacher t, String start, String end) {
+        CourseSection sec = new CourseSection();
+        sec.setSubject(s); sec.setTeacher(t); sec.setSemester("Học kỳ 2");
+        sec.setStartDate(LocalDate.parse(start)); sec.setEndDate(LocalDate.parse(end));
+        return repo.save(sec);
+    }
+    private void saveExam(ExamRepository repo, CourseSection sec, String date, String room) {
+        Exam ex = new Exam(); ex.setCourseSection(sec);
+        ex.setExamDate(LocalDate.parse(date)); ex.setRoom(room);
+        repo.save(ex);
     }
 }

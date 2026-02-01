@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Route;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors; // Cần thiết để xử lý chuỗi lịch thi
+import java.util.stream.Collectors;
 
 @Route("profile")
 public class StudentProfileView extends VerticalLayout implements HasUrlParameter<Long> {
@@ -34,6 +34,7 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
 
     public StudentProfileView(StudentService studentService) {
         this.studentService = studentService;
+        // Quay lại danh sách sinh viên tổng
         Button backBtn = new Button("⬅ Quay lại danh sách", e -> UI.getCurrent().navigate(StudentListView.class));
         add(backBtn, container);
         container.setSizeFull();
@@ -77,18 +78,26 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
             HorizontalLayout mainLayout = new HorizontalLayout();
             mainLayout.setWidthFull();
 
-            // Cột trái: Thời khóa biểu
+            // CỘT TRÁI: THỜI KHÓA BIỂU
             VerticalLayout leftCol = new VerticalLayout();
-            leftCol.add(new H3("📅 Thời khóa biểu"));
+            leftCol.add(new H3("📅 Thời khóa biểu (Click môn để xem danh sách lớp)"));
             Grid<Enrollment> classGrid = new Grid<>();
             classGrid.addColumn(e -> e.getCourseSection().getSubject().getSubjectName()).setHeader("Môn học");
             classGrid.addColumn(e -> e.getCourseSection().getTeacher().getFullName()).setHeader("Giảng viên");
+
+            // --- LOGIC KẾT NỐI VỚI COURSE SECTION DETAIL ---
+            classGrid.addItemClickListener(eventClick -> {
+                Long sectionId = eventClick.getItem().getCourseSection().getId();
+                UI.getCurrent().navigate(CourseSectionDetailView.class, sectionId);
+            });
+            classGrid.getStyle().set("cursor", "pointer");
+
             classGrid.setItems(enrollments);
             classGrid.setAllRowsVisible(true);
             leftCol.add(classGrid);
             leftCol.setWidth("65%");
 
-            // Cột phải: Lịch thi (Fix lại phần này cho Khang)
+            // CỘT PHẢI: LỊCH THI
             VerticalLayout rightCol = new VerticalLayout();
             rightCol.getStyle().set("background-color", "#f9f9f9").set("border-radius", "8px");
             rightCol.add(new H3("📝 Lịch thi"));
@@ -96,7 +105,6 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
             Grid<Enrollment> examGrid = new Grid<>();
             examGrid.addColumn(e -> e.getCourseSection().getSubject().getSubjectName()).setHeader("Môn");
             examGrid.addColumn(e -> {
-                // Hiển thị ngày thi và phòng thi từ thực thể Exams
                 return e.getCourseSection().getExams().stream()
                         .map(ex -> ex.getExamDate().format(dtf) + " (" + ex.getRoom() + ")")
                         .collect(Collectors.joining(", "));
@@ -117,7 +125,6 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
         dialog.setHeaderTitle("Chỉnh sửa thông tin sinh viên");
 
         FormLayout formLayout = new FormLayout();
-
         TextField mssvField = new TextField("MSSV (Cố định)");
         mssvField.setValue(student.getMssv() != null ? student.getMssv() : "");
         mssvField.setReadOnly(true);
@@ -131,12 +138,9 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
         TextField phoneField = new TextField("Số điện thoại");
         phoneField.setValue(student.getPhoneNumber() != null ? student.getPhoneNumber() : "");
 
-        // FIX COMBOBOX: Hiện placeholder "Chọn..." thay vì gán sẵn "Nam"
         ComboBox<String> genderSelect = new ComboBox<>("Giới tính");
         genderSelect.setItems("Nam", "Nữ");
         genderSelect.setPlaceholder("Chọn giới tính");
-
-        // Chỉ set giá trị nếu Database đã có dữ liệu
         if (student.getGender() != null && !student.getGender().isEmpty()) {
             genderSelect.setValue(student.getGender());
         }
@@ -149,18 +153,14 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
             student.setEmail(emailField.getValue());
             student.setPhoneNumber(phoneField.getValue());
             student.setGender(genderSelect.getValue());
-
-            studentService.save(student); // Lưu vào Database
-
+            studentService.save(student);
             Notification.show("Cập nhật thành công!");
             dialog.close();
             refreshView(student.getId());
         });
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         Button cancelButton = new Button("Cancel", e -> dialog.close());
         dialog.getFooter().add(cancelButton, saveButton);
-
         dialog.open();
     }
 }
