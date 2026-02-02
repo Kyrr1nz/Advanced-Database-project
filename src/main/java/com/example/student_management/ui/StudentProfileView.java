@@ -13,12 +13,15 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import java.time.format.DateTimeFormatter;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Route("profile")
+@PageTitle("Hồ sơ Sinh viên")
 public class StudentProfileView extends VerticalLayout implements HasUrlParameter<Long> {
 
     private final StudentService studentService;
@@ -34,10 +38,12 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
 
     public StudentProfileView(StudentService studentService) {
         this.studentService = studentService;
-        // Quay lại danh sách sinh viên tổng
-        Button backBtn = new Button("⬅ Quay lại danh sách", e -> UI.getCurrent().navigate(StudentListView.class));
-        add(backBtn, container);
+        setSpacing(true);
+        setPadding(true);
+
+        add(container);
         container.setSizeFull();
+        container.setPadding(false);
     }
 
     @Override
@@ -48,44 +54,65 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
     private void refreshView(Long studentId) {
         container.removeAll();
         studentService.findById(studentId).ifPresent(student -> {
-            // --- HEADER ---
-            HorizontalLayout headerLayout = new HorizontalLayout();
-            headerLayout.setWidthFull();
-            headerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-            headerLayout.setAlignItems(Alignment.CENTER);
 
-            VerticalLayout infoSummary = new VerticalLayout();
-            infoSummary.setSpacing(false);
-            infoSummary.setPadding(false);
+            // 1. THANH ĐIỀU HƯỚNG (Navigation Row): Quay lại (Trái) - Trang chủ (Phải)
+            HorizontalLayout navRow = new HorizontalLayout();
+            navRow.setWidthFull();
+            navRow.setJustifyContentMode(JustifyContentMode.BETWEEN); // Đẩy 2 nút về 2 đầu
 
-            infoSummary.add(new H2("Hồ sơ: " + student.getFullName()));
+            // Nút Quay lại (Bên trái)
+            Button returnBtn = new Button("Quay lại", new Icon(VaadinIcon.ARROW_BACKWARD));
+            returnBtn.addClickListener(e ->
+                    UI.getCurrent().getPage().executeJs("window.history.back();")
+            );
+
+            // Nút Trang chủ (Bên phải)
+            Button homeBtn = new Button("Trang chủ", new Icon(VaadinIcon.HOME));
+            homeBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            homeBtn.addClickListener(e -> UI.getCurrent().navigate(""));
+
+            navRow.add(returnBtn, homeBtn);
+            container.add(navRow);
+
+            // 2. TIÊU ĐỀ HỒ SƠ
+            H2 profileTitle = new H2("Hồ sơ: " + student.getFullName());
+            container.add(profileTitle);
+
+            // --- THÔNG TIN TỔNG QUAN ---
+            HorizontalLayout infoSummary = new HorizontalLayout();
+            infoSummary.setWidthFull();
+            infoSummary.setAlignItems(Alignment.END);
+
+            VerticalLayout textInfo = new VerticalLayout();
+            textInfo.setSpacing(false);
+            textInfo.setPadding(false);
+
             Span idSpan = new Span("MSSV: " + (student.getMssv() != null ? student.getMssv() : "Chưa có"));
             idSpan.getStyle().set("font-weight", "bold").set("color", "#2b52b2");
-            infoSummary.add(idSpan);
 
-            infoSummary.add(new Span("Email: " + (student.getEmail() != null ? student.getEmail() : "Chưa cập nhật")));
-            infoSummary.add(new Span("Số điện thoại: " + (student.getPhoneNumber() != null ? student.getPhoneNumber() : "Chưa cập nhật")));
-            infoSummary.add(new Span("Giới tính: " + (student.getGender() != null ? student.getGender() : "Chưa xác định")));
+            textInfo.add(idSpan);
+            textInfo.add(new Span("Email: " + (student.getEmail() != null ? student.getEmail() : "Chưa cập nhật")));
+            textInfo.add(new Span("Số điện thoại: " + (student.getPhoneNumber() != null ? student.getPhoneNumber() : "Chưa cập nhật")));
+            textInfo.add(new Span("Giới tính: " + (student.getGender() != null ? student.getGender() : "Chưa xác định")));
 
             Button editBtn = new Button("✏️ Edit Information", e -> openEditDialog(student));
-            editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            editBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
-            headerLayout.add(infoSummary, editBtn);
-            container.add(headerLayout);
+            infoSummary.add(textInfo, editBtn);
+            container.add(infoSummary);
 
-            // --- GRID DATA ---
+            // --- GRID DATA (Thời khóa biểu & Lịch thi) ---
             List<Enrollment> enrollments = studentService.getStudentFullProfile(studentId);
             HorizontalLayout mainLayout = new HorizontalLayout();
             mainLayout.setWidthFull();
 
             // CỘT TRÁI: THỜI KHÓA BIỂU
             VerticalLayout leftCol = new VerticalLayout();
-            leftCol.add(new H3("📅 Thời khóa biểu (Click môn để xem danh sách lớp)"));
+            leftCol.add(new H3("📅 Thời khóa biểu"));
             Grid<Enrollment> classGrid = new Grid<>();
             classGrid.addColumn(e -> e.getCourseSection().getSubject().getSubjectName()).setHeader("Môn học");
             classGrid.addColumn(e -> e.getCourseSection().getTeacher().getFullName()).setHeader("Giảng viên");
 
-            // --- LOGIC KẾT NỐI VỚI COURSE SECTION DETAIL ---
             classGrid.addItemClickListener(eventClick -> {
                 Long sectionId = eventClick.getItem().getCourseSection().getId();
                 UI.getCurrent().navigate(CourseSectionDetailView.class, sectionId);
@@ -149,6 +176,11 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
         dialog.add(formLayout);
 
         Button saveButton = new Button("Save", e -> {
+            if(fullNameField.isEmpty() || emailField.isEmpty()) {
+                Notification.show("Vui lòng không để trống Họ tên và Email", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+
             student.setFullName(fullNameField.getValue());
             student.setEmail(emailField.getValue());
             student.setPhoneNumber(phoneField.getValue());

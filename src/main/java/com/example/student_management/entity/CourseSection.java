@@ -47,6 +47,7 @@ public class CourseSection {
     public void setSemester(String semester) {this.semester = semester; }
     public String getSemester() {return semester; }
     public void setCourse_year(Integer course_year) {this.course_year = course_year; }
+    public Integer getCourse_year() {return course_year;}
     public Set<Enrollment> getEnrollments() { return enrollments; }
 
 }

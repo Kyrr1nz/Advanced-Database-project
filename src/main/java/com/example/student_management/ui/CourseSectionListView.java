@@ -25,12 +25,17 @@ public class CourseSectionListView extends VerticalLayout {
 
         // Thêm các cột thông tin
         grid.addColumn(cs -> cs.getSubject() != null ? cs.getSubject().getSubjectName() : "N/A")
-                .setHeader("Môn học").setSortable(true);
+                .setHeader("Môn học").setSortable(true).setAutoWidth(true);
 
         grid.addColumn(cs -> cs.getTeacher() != null ? cs.getTeacher().getFullName() : "Chưa phân công")
-                .setHeader("Giảng viên").setSortable(true);
+                .setHeader("Giảng viên").setSortable(true).setAutoWidth(true);
 
-        grid.addColumn(CourseSection::getSemester).setHeader("Học kỳ");
+        grid.addColumn(CourseSection::getSemester).setHeader("Học kỳ").setAutoWidth(true);
+
+        grid.addColumn(CourseSection::getCourse_year)
+                .setHeader("Năm học")
+                .setSortable(true)
+                .setAutoWidth(true);
 
         // Cột chức năng để click vào xem chi tiết sinh viên
         grid.addComponentColumn(cs -> {
@@ -40,7 +45,7 @@ public class CourseSectionListView extends VerticalLayout {
                     UI.getCurrent().navigate(com.example.student_management.ui.CourseSectionDetailView.class, cs.getId())
             );
             return viewDetailBtn;
-        }).setHeader("Hành động");
+        }).setHeader("Hành động").setAutoWidth(true);
 
         // Sự kiện click trực tiếp vào dòng
         grid.addItemClickListener(event ->
@@ -49,6 +54,7 @@ public class CourseSectionListView extends VerticalLayout {
 
         grid.setItems(csRepo.findAll());
         grid.getStyle().set("cursor", "pointer");
+        grid.setAllRowsVisible(true);
 
         add(grid);
 

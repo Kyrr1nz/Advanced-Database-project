@@ -22,25 +22,28 @@ public class Enrollment {
     @JoinColumn(name = "section_id")
     private com.example.student_management.entity.CourseSection courseSection;
 
-    private LocalDate registerDate;
+    private LocalDate EnrollmentDate;
     private String status;
 
-    protected Enrollment() {}
+    public Enrollment() {}
 
     public Enrollment(Student student, com.example.student_management.entity.CourseSection courseSection) {
         this.student = student;
         this.courseSection = courseSection;
         this.status = "ENROLLED";
         if (courseSection != null && courseSection.getStartDate() != null) {
-            this.registerDate = courseSection.getStartDate().minusWeeks(3);
+            this.EnrollmentDate = courseSection.getStartDate().minusWeeks(3);
         }
     }
 
     public Long getEnrollmentId() { return enrollmentId; }
+
+    public void setCourseSection(CourseSection courseSection) {this.courseSection = courseSection;}
+    public void setStudent(Student student) {this.student = student;}
     public Student getStudent() { return student; }
     public com.example.student_management.entity.CourseSection getCourseSection() { return courseSection; }
-    public LocalDate getRegisterDate() { return registerDate; }
+    public LocalDate getEnrollmentDate() { return EnrollmentDate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
+    public void setEnrollmentDate(LocalDate registerDate) {this.EnrollmentDate =registerDate;}
 }

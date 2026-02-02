@@ -6,9 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Configuration
 public class Dataset {
@@ -19,96 +17,129 @@ public class Dataset {
                                TeacherRepository tRepo, CourseSectionRepository csRepo,
                                EnrollmentRepository eRepo, ExamRepository exRepo) {
         return args -> {
-            // 1. Tạo Ngành học đa dạng
-            Major it = saveMajor(mRepo, "Công nghệ thông tin");
-            Major biz = saveMajor(mRepo, "Quản trị kinh doanh");
-            Major mkt = saveMajor(mRepo, "Marketing");
-            Major log = saveMajor(mRepo, "Logistics & Chuỗi cung ứng");
-            Major design = saveMajor(mRepo, "Thiết kế đồ họa");
-
-            // 2. Tạo Lớp hành chính theo khóa K15
-            ClassEntity c1 = saveClass(cRepo, "IT-K15", it);
-            ClassEntity c2 = saveClass(cRepo, "BA-K15", biz);
-            ClassEntity c3 = saveClass(cRepo, "MKT-K15", mkt);
-            ClassEntity c4 = saveClass(cRepo, "LOG-K15", log);
-            ClassEntity c5 = saveClass(cRepo, "DS-K15", design);
-
-            // 3. Tạo Giảng viên với học vị
-            Teacher t1 = saveTeacher(tRepo, "TS. Nguyễn Văn Bình");
-            Teacher t2 = saveTeacher(tRepo, "ThS. Lê Thị Lan");
-            Teacher t3 = saveTeacher(tRepo, "PGS.TS Hoàng Nam");
-            Teacher t4 = saveTeacher(tRepo, "ThS. Đặng Thu Thảo");
-
-            // 4. Tạo Môn học
-            Subject sub1 = saveSubject(subRepo, "Lập trình Java nâng cao");
-            Subject sub2 = saveSubject(subRepo, "Cơ sở dữ liệu MySQL");
-            Subject sub3 = saveSubject(subRepo, "Kỹ năng giao tiếp");
-            Subject sub4 = saveSubject(subRepo, "Kinh tế vi mô");
-
-            // 5. Tạo Lớp học phần (Course Sections)
-            CourseSection secJava = saveSection(csRepo, sub1, t1, "2023-02-08", "2023-05-08");
-            CourseSection secSQL = saveSection(csRepo, sub2, t2, "2023-03-01", "2023-06-01");
-            CourseSection secSoftSkill = saveSection(csRepo, sub3, t4, "2023-02-15", "2023-05-15");
-
-            // 6. Tạo 50 Sinh viên với đầy đủ thông tin
-            String[] hos = {"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Phan", "Đỗ", "Bùi", "Đặng"};
-            String[] dem = {"Văn", "Thị", "Duy", "Minh", "Thu", "Hồng", "Thanh", "Anh"};
-            String[] tens = {"Khang", "Nam", "Triết", "Bưởi", "Thái", "An", "Bình", "Chi", "Dũng", "Hà", "Linh", "Quân"};
             Random rand = new Random();
-            List<ClassEntity> classes = List.of(c1, c2, c3, c4, c5);
 
-            for (int i = 1; i <= 50; i++) {
-                Student s = new Student();
-                s.setMssv(String.format("SV%03d", i));
-
-                String gender = rand.nextBoolean() ? "Nam" : "Nữ";
-                String hoTen = hos[rand.nextInt(hos.length)] + " " + dem[rand.nextInt(dem.length)] + " " + tens[rand.nextInt(tens.length)];
-
-                s.setFullName(hoTen);
-                s.setGender(gender); // Tự động gán giới tính
-                s.setEmail("sv" + i + "@university.edu.vn");
-                s.setPhoneNumber("09" + (10000000 + rand.nextInt(90000000))); // SĐT ngẫu nhiên
-                s.setClazz(classes.get(rand.nextInt(classes.size())));
-
-                sRepo.save(s);
-
-                // Đăng ký học phần chéo (Mỗi SV học 2 môn ngẫu nhiên)
-                eRepo.save(new Enrollment(s, secSoftSkill)); // Môn kỹ năng mềm ai cũng học
-                if (i % 2 == 0) eRepo.save(new Enrollment(s, secJava));
-                else eRepo.save(new Enrollment(s, secSQL));
+            // 1. Chuyên ngành (Giữ nguyên)
+            String[] majorNames = {"Công nghệ thông tin", "Kỹ thuật phần mềm", "An toàn thông tin", "Quản trị kinh doanh", "Kế toán", "Marketing"};
+            List<Major> majors = new ArrayList<>();
+            for (String name : majorNames) {
+                Major m = new Major(); m.setMajorName(name);
+                majors.add(mRepo.save(m));
             }
 
-            // 7. Tạo Lịch thi cho các môn
-            saveExam(exRepo, secJava, "2023-05-15", "P.402-A1");
-            saveExam(exRepo, secSQL, "2023-06-10", "P.Lab-02");
-            saveExam(exRepo, secSoftSkill, "2023-05-20", "Hội trường G");
+            // 2. Lớp hành chính & 3. Giảng viên (Giữ nguyên)
+            List<ClassEntity> adminClasses = new ArrayList<>();
+            for (Major m : majors) {
+                String shortName = getShortName(m.getMajorName());
+                for (char suffix = 'A'; suffix <= 'C'; suffix++) {
+                    ClassEntity c = new ClassEntity();
+                    c.setClassName(shortName + "-K15" + suffix);
+                    c.setMajor(m);
+                    adminClasses.add(cRepo.save(c));
+                }
+            }
 
-            System.out.println(">>> Hệ thống Khang Á: Đã nạp 50 sinh viên đa ngành và lịch thi!");
+            String[] tNames = {"TS. Lê Nam", "ThS. Minh Hà", "PGS. Hoài An", "TS. Quốc Bảo", "ThS. Thu Trang", "TS. Văn Dũng"};
+            List<Teacher> teachers = new ArrayList<>();
+            for (String tn : tNames) {
+                Teacher t = new Teacher(); t.setFullName(tn);
+                t.setEmail(tn.toLowerCase().replaceAll("[^a-z]", "") + "@university.edu.vn");
+                teachers.add(tRepo.save(t));
+            }
+
+            // 4. Môn học (Giữ nguyên)
+            String[] subNames = {"Lập trình Java", "Cấu trúc dữ liệu", "Cơ sở dữ liệu", "Kinh tế vi mô", "Pháp luật đại cương", "Tiếng Anh chuyên ngành", "Mạng máy tính", "Hệ điều hành", "Phân tích hệ thống"};
+            List<Subject> subjects = new ArrayList<>();
+            for (String sn : subNames) {
+                Subject s = new Subject(); s.setSubjectName(sn); s.setCredits(3);
+                subjects.add(subRepo.save(s));
+            }
+
+            // 5. TẠO LỚP HỌC PHẦN THEO 3 HỌC KỲ RIÊNG BIỆT
+            List<CourseSection> allSections = new ArrayList<>();
+
+            // Cấu trúc thời gian học cho từng học kỳ trong năm 2024
+            Map<String, LocalDate[]> timeline = new LinkedHashMap<>();
+            timeline.put("Học kỳ 1", new LocalDate[]{LocalDate.of(2024, 1, 2), LocalDate.of(2024, 4, 15)});
+            timeline.put("Học kỳ 2", new LocalDate[]{LocalDate.of(2024, 5, 15), LocalDate.of(2024, 8, 25)});
+            timeline.put("Học kỳ 3", new LocalDate[]{LocalDate.of(2024, 9, 20), LocalDate.of(2024, 12, 15)});
+
+            for (Map.Entry<String, LocalDate[]> entry : timeline.entrySet()) {
+                String semName = entry.getKey();
+                LocalDate start = entry.getValue()[0];
+                LocalDate end = entry.getValue()[1];
+
+                for (Subject s : subjects) {
+                    for (int j = 1; j <= 5; j++) {
+                        CourseSection sec = new CourseSection();
+                        sec.setSubject(s);
+                        sec.setTeacher(teachers.get(rand.nextInt(teachers.size())));
+                        sec.setSemester(semName);
+                        sec.setCourse_year(2024); // Khớp với lỗi đỏ course_year
+                        sec.setStartDate(start);
+                        sec.setEndDate(end);
+                        allSections.add(csRepo.save(sec));
+                    }
+                }
+            }
+
+            // 6. Nạp 2000 SV & Đăng ký (Giữ nguyên logic lọc Subject ID)
+            String[] hos = {"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Phan", "Đỗ", "Bùi", "Lý"};
+            String[] lottên = {"Thế", "Minh", "Thị", "Văn", "Gia", "Bảo", "Ngọc", "Hoàng", "Phương", "Anh"};
+            String[] tens = {"An", "Bình", "Chi", "Dũng", "Em", "Giang", "Hương", "Khánh", "Linh", "Minh", "Tâm", "Hùng", "Sơn"};
+
+            List<Student> currentBatch = new ArrayList<>();
+            for (int i = 1; i <= 2000; i++) {
+                Student s = new Student();
+                s.setMssv(String.format("SV%04d", i));
+                s.setFullName(hos[rand.nextInt(hos.length)] + " " + lottên[rand.nextInt(lottên.length)] + " " + tens[rand.nextInt(tens.length)]);
+                s.setGender(rand.nextBoolean() ? "Nam" : "Nữ");
+                s.setEmail("student" + i + "@uni.edu.vn");
+                s.setClazz(adminClasses.get(rand.nextInt(adminClasses.size())));
+                currentBatch.add(s);
+
+                if (i % 200 == 0 || i == 2000) {
+                    List<Student> savedStudents = sRepo.saveAll(currentBatch);
+                    List<Enrollment> enrolls = new ArrayList<>();
+                    for (Student st : savedStudents) {
+                        Set<Long> pickedSubjectIds = new HashSet<>();
+                        while (pickedSubjectIds.size() < 4) {
+                            CourseSection randomSec = allSections.get(rand.nextInt(allSections.size()));
+                            if (!pickedSubjectIds.contains(randomSec.getSubject().getId())) {
+                                pickedSubjectIds.add(randomSec.getSubject().getId());
+                                Enrollment en = new Enrollment();
+                                en.setStudent(st);
+                                en.setCourseSection(randomSec);
+                                en.setEnrollmentDate(LocalDate.now());
+                                en.setStatus("Đã đăng ký");
+                                enrolls.add(en);
+                            }
+                        }
+                    }
+                    eRepo.saveAll(enrolls);
+                    currentBatch.clear();
+                }
+            }
+
+            // 7. LỊCH THI: CÁCH 2 TUẦN SAU KHI KẾT THÚC MÔN
+            for (CourseSection sec : allSections) {
+                Exam ex = new Exam();
+                ex.setCourseSection(sec);
+                // Ngày thi = Ngày kết thúc môn + 14 ngày (2 tuần) + Ngẫu nhiên 1-5 ngày để rải lịch thi
+                ex.setExamDate(sec.getEndDate().plusDays(14 + rand.nextInt(5)));
+                ex.setRoom("Phòng " + (200 + rand.nextInt(100)));
+                exRepo.save(ex);
+            }
+
+            System.out.println(">>> NẠP XONG: 3 học kỳ tách biệt, lịch thi cách 2 tuần!");
         };
     }
 
-    // --- CÁC HÀM TRỢ GIÚP (HELPERS) ---
-    private Major saveMajor(MajorRepository repo, String name) {
-        Major m = new Major(); m.setMajorName(name); return repo.save(m);
-    }
-    private ClassEntity saveClass(ClassRepository repo, String name, Major m) {
-        ClassEntity c = new ClassEntity(); c.setClassName(name); c.setMajor(m); return repo.save(c);
-    }
-    private Teacher saveTeacher(TeacherRepository repo, String name) {
-        Teacher t = new Teacher(); t.setFullName(name); return repo.save(t);
-    }
-    private Subject saveSubject(SubjectRepository repo, String name) {
-        Subject s = new Subject(); s.setSubjectName(name); return repo.save(s);
-    }
-    private CourseSection saveSection(CourseSectionRepository repo, Subject s, Teacher t, String start, String end) {
-        CourseSection sec = new CourseSection();
-        sec.setSubject(s); sec.setTeacher(t); sec.setSemester("Học kỳ 2");
-        sec.setStartDate(LocalDate.parse(start)); sec.setEndDate(LocalDate.parse(end));
-        return repo.save(sec);
-    }
-    private void saveExam(ExamRepository repo, CourseSection sec, String date, String room) {
-        Exam ex = new Exam(); ex.setCourseSection(sec);
-        ex.setExamDate(LocalDate.parse(date)); ex.setRoom(room);
-        repo.save(ex);
+    private String getShortName(String majorName) {
+        StringBuilder sb = new StringBuilder();
+        for (String word : majorName.split(" ")) {
+            if (!word.isEmpty()) sb.append(word.charAt(0));
+        }
+        return sb.toString().toUpperCase();
     }
 }

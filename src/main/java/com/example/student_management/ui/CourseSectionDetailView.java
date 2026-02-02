@@ -5,9 +5,13 @@ import com.example.student_management.entity.Student;
 import com.example.student_management.repository.CourseSectionRepository;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -27,17 +31,36 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
 
     public CourseSectionDetailView(CourseSectionRepository csRepo) {
         this.csRepo = csRepo;
+        setSpacing(true);
+        setPadding(true);
 
-        // Nút quay lại linh hoạt
-        Button backBtn = new Button("⬅ Quay lại trang chủ", e -> UI.getCurrent().navigate(""));
+        // 1. Tạo thanh điều hướng (Navigation Row)
+        HorizontalLayout navRow = new HorizontalLayout();
+        navRow.setWidthFull();
+        navRow.setJustifyContentMode(JustifyContentMode.BETWEEN); // Đẩy 2 nút ra 2 đầu
 
-        add(backBtn, new H2("Chi tiết Lớp học phần"), infoContainer, studentGrid);
+        // Nút Quay lại (Bên trái) - Sử dụng lịch sử trình duyệt
+        Button returnBtn = new Button("Quay lại", new Icon(VaadinIcon.ARROW_BACKWARD));
+        returnBtn.addClickListener(e ->
+                UI.getCurrent().getPage().executeJs("window.history.back();")
+        );
+
+        // Nút Trang chủ (Bên phải) - Quay về MainView
+        Button homeBtn = new Button("Trang chủ", new Icon(VaadinIcon.HOME));
+        homeBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        homeBtn.addClickListener(e -> UI.getCurrent().navigate(""));
+
+        navRow.add(returnBtn, homeBtn);
+
+        // 2. Tiêu đề trang
+        H2 title = new H2("Chi tiết Lớp học phần");
+
+        add(navRow, title, infoContainer, studentGrid);
 
         configureGrid();
     }
 
     private void configureGrid() {
-        // Cột hiển thị MSSV từ database
         studentGrid.addColumn(Student::getMssv).setHeader("MSSV").setAutoWidth(true).setSortable(true);
         studentGrid.addColumn(Student::getFullName).setHeader("Họ Tên").setAutoWidth(true).setSortable(true);
         studentGrid.addColumn(s -> s.getClazz() != null ? s.getClazz().getClassName() : "N/A")
@@ -46,19 +69,20 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
                         ? s.getClazz().getMajor().getMajorName() : "N/A")
                 .setHeader("Chuyên ngành");
 
-        // Khi click vào bất kỳ sinh viên nào trong danh sách sinh viên
         studentGrid.addItemClickListener(event -> {
             Long studentId = event.getItem().getId();
             UI.getCurrent().navigate(StudentProfileView.class, studentId);
         });
 
         studentGrid.getStyle().set("cursor", "pointer");
+        studentGrid.setAllRowsVisible(true);
     }
 
     @Override
     public void setParameter(BeforeEvent event, Long sectionId) {
         csRepo.findById(sectionId).ifPresent(section -> {
             infoContainer.removeAll();
+            infoContainer.setPadding(false);
 
             String subName = section.getSubject() != null ? section.getSubject().getSubjectName() : "N/A";
             String teaName = section.getTeacher() != null ? section.getTeacher().getFullName() : "Chưa phân công";
@@ -70,7 +94,6 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
                     new Span("👥 Sĩ số: " + (section.getEnrollments() != null ? section.getEnrollments().size() : 0))
             );
 
-            // Chuyển đổi từ danh sách Enrollment sang danh sách Student để hiển thị
             if (section.getEnrollments() != null) {
                 List<Student> students = section.getEnrollments().stream()
                         .map(Enrollment::getStudent)
