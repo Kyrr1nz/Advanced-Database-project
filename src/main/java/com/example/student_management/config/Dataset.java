@@ -19,7 +19,7 @@ public class Dataset {
         return args -> {
             Random rand = new Random();
 
-            // 1. Chuyên ngành (Giữ nguyên)
+            // 1. Chuyên ngành
             String[] majorNames = {"Công nghệ thông tin", "Kỹ thuật phần mềm", "An toàn thông tin", "Quản trị kinh doanh", "Kế toán", "Marketing"};
             List<Major> majors = new ArrayList<>();
             for (String name : majorNames) {
@@ -27,7 +27,7 @@ public class Dataset {
                 majors.add(mRepo.save(m));
             }
 
-            // 2. Lớp hành chính & 3. Giảng viên (Giữ nguyên)
+            // 2. Lớp hành chính & 3. Giảng viên
             List<ClassEntity> adminClasses = new ArrayList<>();
             for (Major m : majors) {
                 String shortName = getShortName(m.getMajorName());
@@ -47,7 +47,7 @@ public class Dataset {
                 teachers.add(tRepo.save(t));
             }
 
-            // 4. Môn học (Giữ nguyên)
+            // 4. Môn học
             String[] subNames = {"Lập trình Java", "Cấu trúc dữ liệu", "Cơ sở dữ liệu", "Kinh tế vi mô", "Pháp luật đại cương", "Tiếng Anh chuyên ngành", "Mạng máy tính", "Hệ điều hành", "Phân tích hệ thống"};
             List<Subject> subjects = new ArrayList<>();
             for (String sn : subNames) {
@@ -55,35 +55,37 @@ public class Dataset {
                 subjects.add(subRepo.save(s));
             }
 
-            // 5. TẠO LỚP HỌC PHẦN THEO 3 HỌC KỲ RIÊNG BIỆT
+            // 5. TẠO LỚP HỌC PHẦN THEO 3 NĂM (2024, 2025, 2026)
             List<CourseSection> allSections = new ArrayList<>();
+            int[] years = {2024, 2025, 2026};
 
-            // Cấu trúc thời gian học cho từng học kỳ trong năm 2024
-            Map<String, LocalDate[]> timeline = new LinkedHashMap<>();
-            timeline.put("Học kỳ 1", new LocalDate[]{LocalDate.of(2024, 1, 2), LocalDate.of(2024, 4, 15)});
-            timeline.put("Học kỳ 2", new LocalDate[]{LocalDate.of(2024, 5, 15), LocalDate.of(2024, 8, 25)});
-            timeline.put("Học kỳ 3", new LocalDate[]{LocalDate.of(2024, 9, 20), LocalDate.of(2024, 12, 15)});
+            for (int year : years) {
+                Map<String, LocalDate[]> timeline = new LinkedHashMap<>();
+                timeline.put("Học kỳ 1", new LocalDate[]{LocalDate.of(year, 1, 2), LocalDate.of(year, 4, 15)});
+                timeline.put("Học kỳ 2", new LocalDate[]{LocalDate.of(year, 5, 15), LocalDate.of(year, 8, 25)});
+                timeline.put("Học kỳ 3", new LocalDate[]{LocalDate.of(year, 9, 20), LocalDate.of(year, 12, 15)});
 
-            for (Map.Entry<String, LocalDate[]> entry : timeline.entrySet()) {
-                String semName = entry.getKey();
-                LocalDate start = entry.getValue()[0];
-                LocalDate end = entry.getValue()[1];
+                for (Map.Entry<String, LocalDate[]> entry : timeline.entrySet()) {
+                    String semName = entry.getKey();
+                    LocalDate start = entry.getValue()[0];
+                    LocalDate end = entry.getValue()[1];
 
-                for (Subject s : subjects) {
-                    for (int j = 1; j <= 5; j++) {
-                        CourseSection sec = new CourseSection();
-                        sec.setSubject(s);
-                        sec.setTeacher(teachers.get(rand.nextInt(teachers.size())));
-                        sec.setSemester(semName);
-                        sec.setCourse_year(2024); // Khớp với lỗi đỏ course_year
-                        sec.setStartDate(start);
-                        sec.setEndDate(end);
-                        allSections.add(csRepo.save(sec));
+                    for (Subject s : subjects) {
+                        for (int j = 1; j <= 3; j++) { // Mỗi môn 3 lớp/kỳ để tránh quá tải DB
+                            CourseSection sec = new CourseSection();
+                            sec.setSubject(s);
+                            sec.setTeacher(teachers.get(rand.nextInt(teachers.size())));
+                            sec.setSemester(semName);
+                            sec.setCourse_year(year); // Thiết lập năm học tương ứng
+                            sec.setStartDate(start);
+                            sec.setEndDate(end);
+                            allSections.add(csRepo.save(sec));
+                        }
                     }
                 }
             }
 
-            // 6. Nạp 2000 SV & Đăng ký (Giữ nguyên logic lọc Subject ID)
+            // 6. Nạp 2000 SV & Đăng ký ngẫu nhiên qua các năm
             String[] hos = {"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Phan", "Đỗ", "Bùi", "Lý"};
             String[] lottên = {"Thế", "Minh", "Thị", "Văn", "Gia", "Bảo", "Ngọc", "Hoàng", "Phương", "Anh"};
             String[] tens = {"An", "Bình", "Chi", "Dũng", "Em", "Giang", "Hương", "Khánh", "Linh", "Minh", "Tâm", "Hùng", "Sơn"};
@@ -103,35 +105,37 @@ public class Dataset {
                     List<Enrollment> enrolls = new ArrayList<>();
                     for (Student st : savedStudents) {
                         Set<Long> pickedSubjectIds = new HashSet<>();
-                        while (pickedSubjectIds.size() < 4) {
+                        // Tăng lên 8 môn để trải đều ra 3 năm cho đẹp
+                        while (pickedSubjectIds.size() < 8) {
                             CourseSection randomSec = allSections.get(rand.nextInt(allSections.size()));
                             if (!pickedSubjectIds.contains(randomSec.getSubject().getId())) {
                                 pickedSubjectIds.add(randomSec.getSubject().getId());
                                 Enrollment en = new Enrollment();
                                 en.setStudent(st);
                                 en.setCourseSection(randomSec);
-                                en.setEnrollmentDate(LocalDate.now());
-                                en.setStatus("Đã đăng ký");
+                                en.setEnrollmentDate(randomSec.getStartDate().minusDays(10));
+                                en.setStatus("Đã hoàn thành");
                                 enrolls.add(en);
                             }
                         }
                     }
                     eRepo.saveAll(enrolls);
                     currentBatch.clear();
+                    System.out.print(".");
                 }
             }
 
-            // 7. LỊCH THI: CÁCH 2 TUẦN SAU KHI KẾT THÚC MÔN
+            // 7. LỊCH THI: CÁCH 2 TUẦN SAU KẾT THÚC MÔN
             for (CourseSection sec : allSections) {
                 Exam ex = new Exam();
                 ex.setCourseSection(sec);
-                // Ngày thi = Ngày kết thúc môn + 14 ngày (2 tuần) + Ngẫu nhiên 1-5 ngày để rải lịch thi
-                ex.setExamDate(sec.getEndDate().plusDays(14 + rand.nextInt(5)));
-                ex.setRoom("Phòng " + (200 + rand.nextInt(100)));
+                // Ngày thi = Ngày kết thúc môn + 14 ngày (2 tuần)
+                ex.setExamDate(sec.getEndDate().plusDays(14 + rand.nextInt(3)));
+                ex.setRoom("Phòng " + (100 + rand.nextInt(100)));
                 exRepo.save(ex);
             }
 
-            System.out.println(">>> NẠP XONG: 3 học kỳ tách biệt, lịch thi cách 2 tuần!");
+            System.out.println("\n>>> NẠP XONG: Dữ liệu cho trường Đại Học");
         };
     }
 

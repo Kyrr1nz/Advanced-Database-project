@@ -37,7 +37,6 @@ public class Enrollment {
     }
 
     public Long getEnrollmentId() { return enrollmentId; }
-
     public void setCourseSection(CourseSection courseSection) {this.courseSection = courseSection;}
     public void setStudent(Student student) {this.student = student;}
     public Student getStudent() { return student; }
