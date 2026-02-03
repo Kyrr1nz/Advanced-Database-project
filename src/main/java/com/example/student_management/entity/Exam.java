@@ -27,6 +27,7 @@ public class Exam {
     public LocalDate getExamDate() { return examDate; }
     public LocalTime getStartTime() { return startTime; }
     public String getRoom() { return room; }
+    public CourseSection getCourseSection() {return courseSection;}
     public void setCourseSection(com.example.student_management.entity.CourseSection courseSection) { this.courseSection = courseSection; }
     public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
     public void setRoom(String room) { this.room = room; }
