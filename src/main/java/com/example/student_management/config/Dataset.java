@@ -108,8 +108,8 @@ public class Dataset {
                         // Tăng lên 8 môn để trải đều ra 3 năm cho đẹp
                         while (pickedSubjectIds.size() < 8) {
                             CourseSection randomSec = allSections.get(rand.nextInt(allSections.size()));
-                            if (!pickedSubjectIds.contains(randomSec.getSubject().getId())) {
-                                pickedSubjectIds.add(randomSec.getSubject().getId());
+                            if (!pickedSubjectIds.contains(randomSec.getSubject().getSubject_id())) {
+                                pickedSubjectIds.add(randomSec.getSubject().getSubject_id());
                                 Enrollment en = new Enrollment();
                                 en.setStudent(st);
                                 en.setCourseSection(randomSec);

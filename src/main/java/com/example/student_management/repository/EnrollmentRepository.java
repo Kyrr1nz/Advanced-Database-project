@@ -11,8 +11,7 @@ import java.util.List;
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     List<Enrollment> findByStudentId(Long studentId);
-    // Truy vấn lấy toàn bộ thông tin Môn học, Giáo viên, Lịch học, Lịch thi của 1 sinh viên
-    @Query("SELECT e FROM Enrollment e " +
+    @Query("SELECT DISTINCT e FROM Enrollment e " +
             "JOIN FETCH e.courseSection cs " +
             "JOIN FETCH cs.subject " +
             "JOIN FETCH cs.teacher " +

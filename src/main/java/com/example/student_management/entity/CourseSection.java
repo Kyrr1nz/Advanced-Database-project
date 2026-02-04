@@ -7,11 +7,11 @@ import java.util.Set;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "course_sections")
+@Table(name = "course_section")
 public class CourseSection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long course_section_id;
 
     private String semester;
     private Integer course_year;
@@ -34,7 +34,7 @@ public class CourseSection {
     private Set<Enrollment> enrollments = new HashSet<>();
 
     // Getter & Setter
-    public Long getId() { return id; }
+    public Long getCourse_section_id() { return course_section_id; }
     public Subject getSubject() { return subject; }
     public void setSubject(Subject subject) { this.subject = subject; }
     public Teacher getTeacher() { return teacher; }

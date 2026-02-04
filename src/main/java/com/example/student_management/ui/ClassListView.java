@@ -45,7 +45,7 @@ public class ClassListView extends VerticalLayout {
 
         grid.addItemClickListener(event -> {
             ClassEntity selectedClass = event.getItem();
-            UI.getCurrent().navigate(com.example.student_management.ui.ClassDetailView.class, selectedClass.getId());
+            UI.getCurrent().navigate(com.example.student_management.ui.ClassDetailView.class, selectedClass.getClass_id());
         });
     }
 }

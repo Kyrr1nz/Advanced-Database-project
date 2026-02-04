@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "students")
+@Table(name = "student")
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class Student {
     public Student() {
     }
 
-    // Getters & Setters bắt buộc để UI không bị lỗi đỏ
+    // Getters & Setters
     public Long getId() {
         return id;
     }

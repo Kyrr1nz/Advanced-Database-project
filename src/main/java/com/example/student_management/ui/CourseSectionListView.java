@@ -42,14 +42,14 @@ public class CourseSectionListView extends VerticalLayout {
             Button viewDetailBtn = new Button("Xem danh sách lớp");
             viewDetailBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
             viewDetailBtn.addClickListener(e ->
-                    UI.getCurrent().navigate(com.example.student_management.ui.CourseSectionDetailView.class, cs.getId())
+                    UI.getCurrent().navigate(com.example.student_management.ui.CourseSectionDetailView.class, cs.getCourse_section_id())
             );
             return viewDetailBtn;
         }).setHeader("Hành động").setAutoWidth(true);
 
         // Sự kiện click trực tiếp vào dòng
         grid.addItemClickListener(event ->
-                UI.getCurrent().navigate(com.example.student_management.ui.CourseSectionDetailView.class, event.getItem().getId())
+                UI.getCurrent().navigate(com.example.student_management.ui.CourseSectionDetailView.class, event.getItem().getCourse_section_id())
         );
 
         grid.setItems(csRepo.findAll());

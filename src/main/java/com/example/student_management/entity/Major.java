@@ -4,12 +4,12 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "majors")
+@Table(name = "major")
 public class Major {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long major_id;
 
     @Column(name = "major_name", nullable = false)
     private String majorName;
@@ -21,8 +21,8 @@ public class Major {
     public Major() {}
 
     // Getter & Setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() { return major_id; }
+    public void setId(Long id) { this.major_id = id; }
 
     public String getMajorName() { return majorName; }
     public void setMajorName(String majorName) { this.majorName = majorName; }

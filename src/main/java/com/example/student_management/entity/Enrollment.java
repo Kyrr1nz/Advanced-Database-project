@@ -5,14 +5,14 @@ import java.time.LocalDate;
 
 @Entity
 @Table(
-        name = "enrollments",
+        name = "enrollment",
         uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "section_id"})
 )
 public class Enrollment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long enrollmentId;
+    private Long enrollment_id;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
@@ -36,7 +36,7 @@ public class Enrollment {
         }
     }
 
-    public Long getEnrollmentId() { return enrollmentId; }
+    public Long getEnrollment_id() { return enrollment_id; }
     public void setCourseSection(CourseSection courseSection) {this.courseSection = courseSection;}
     public void setStudent(Student student) {this.student = student;}
     public Student getStudent() { return student; }

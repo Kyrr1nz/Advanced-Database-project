@@ -7,7 +7,7 @@ import java.util.Set;
 public class ClassEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long class_id;
 
     private String className;
 
@@ -19,7 +19,7 @@ public class ClassEntity {
     private Set<Student> students;
 
     // Getters and Setters
-    public Long getId() { return id; }
+    public Long getClass_id() { return class_id; }
     public String getClassName() { return className; }
     public void setClassName(String className) { this.className = className; }
     public Major getMajor() { return major; }

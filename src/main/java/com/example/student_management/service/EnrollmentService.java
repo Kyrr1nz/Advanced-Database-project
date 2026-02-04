@@ -19,6 +19,10 @@ public class EnrollmentService {
         return enrollmentRepository.findByStudentId(studentId);
     }
 
+    public List<Enrollment> getFullStudentDetails(Long studentId) {
+        return enrollmentRepository.findFullDetailsByStudentId(studentId);
+    }
+
     public Enrollment save(Enrollment enrollment) {
         return enrollmentRepository.save(enrollment);
     }

@@ -4,13 +4,13 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "subjects")
+@Table(name = "subject")
 public class Subject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long subject_id;
 
-    @Column(name = "subjec_name", nullable = false)
+    @Column(name = "subject_name", nullable = false)
     private String subjectName;
 
     private Integer credits;
@@ -19,7 +19,7 @@ public class Subject {
     private List<com.example.student_management.entity.CourseSection> courseSections;
 
     // Getter & Setter
-    public Long getId() { return id; }
+    public Long getSubject_id() { return subject_id; }
     public String getSubjectName() { return subjectName; }
     public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
     public Integer getCredits() { return credits; }

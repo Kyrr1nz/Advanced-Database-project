@@ -1,6 +1,5 @@
 package com.example.student_management.ui;
 
-import com.example.student_management.entity.ClassEntity;
 import com.example.student_management.entity.Student;
 import com.example.student_management.service.ClassService;
 import com.vaadin.flow.component.UI;

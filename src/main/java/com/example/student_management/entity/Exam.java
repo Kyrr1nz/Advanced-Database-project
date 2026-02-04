@@ -5,17 +5,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "exams")
+@Table(name = "exam")
 public class Exam {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long exam_id;
 
     @Column(name = "exam_date")
     private LocalDate examDate;
-
-    @Column(name = "start_time")
-    private LocalTime startTime;
 
     private String room;
 
@@ -25,7 +22,6 @@ public class Exam {
 
     // Getter & Setter
     public LocalDate getExamDate() { return examDate; }
-    public LocalTime getStartTime() { return startTime; }
     public String getRoom() { return room; }
     public CourseSection getCourseSection() {return courseSection;}
     public void setCourseSection(com.example.student_management.entity.CourseSection courseSection) { this.courseSection = courseSection; }

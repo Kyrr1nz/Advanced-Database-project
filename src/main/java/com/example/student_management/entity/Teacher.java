@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "teachers")
+@Table(name = "teacher")
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long teacher_id;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
@@ -20,7 +20,7 @@ public class Teacher {
     private List<com.example.student_management.entity.CourseSection> courseSections;
 
     // Getter & Setter
-    public Long getId() { return id; }
+    public Long getId() { return teacher_id; }
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
     public String getEmail() { return email; }
