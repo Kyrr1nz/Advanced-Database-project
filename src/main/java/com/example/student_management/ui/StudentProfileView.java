@@ -1,7 +1,7 @@
 package com.example.student_management.ui;
 
 import com.example.student_management.entity.Enrollment;
-import com.example.student_management.entity.Exam; // Thêm import này
+import com.example.student_management.entity.Exam;
 import com.example.student_management.entity.Student;
 import com.example.student_management.service.StudentService;
 import com.vaadin.flow.component.UI;
@@ -25,6 +25,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import com.vaadin.flow.component.datepicker.DatePicker;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator; // Thêm import này
 import java.util.List;
@@ -143,7 +144,60 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
     }
 
     private void openEditDialog(Student student) {
-        // ... (Giữ nguyên logic Edit Dialog của bạn)
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Chỉnh sửa thông tin sinh viên");
+
+        FormLayout formLayout = new FormLayout();
+
+        // Các trường hiện có
+        TextField mssvField = new TextField("MSSV (Cố định)");
+        mssvField.setValue(student.getMssv() != null ? student.getMssv() : "");
+        mssvField.setReadOnly(true);
+
+        TextField fullNameField = new TextField("Họ và Tên");
+        fullNameField.setValue(student.getFullName());
+
+        // THÊM TRƯỜNG NGÀY SINH (DOB)
+        DatePicker dobField = new DatePicker("Ngày sinh");
+        dobField.setPlaceholder("Chọn ngày sinh");
+        if (student.getDob() != null) {
+            dobField.setValue(student.getDob());
+        }
+
+        TextField emailField = new TextField("Email");
+        emailField.setValue(student.getEmail());
+
+        TextField phoneField = new TextField("Số điện thoại");
+        phoneField.setValue(student.getPhoneNumber() != null ? student.getPhoneNumber() : "");
+
+        ComboBox<String> genderSelect = new ComboBox<>("Giới tính");
+        genderSelect.setItems("Nam", "Nữ");
+        genderSelect.setValue(student.getGender());
+
+        // Thêm dobField vào layout
+        formLayout.add(mssvField, fullNameField, dobField, emailField, phoneField, genderSelect);
+
+        // Logic Lưu dữ liệu
+        Button saveBtn = new Button("Lưu", e -> {
+            student.setFullName(fullNameField.getValue());
+            student.setDob(dobField.getValue());
+            student.setEmail(emailField.getValue());
+            student.setPhoneNumber(phoneField.getValue());
+            student.setGender(genderSelect.getValue());
+
+            studentService.save(student);
+
+            Notification.show("Cập nhật thông tin thành công!");
+            dialog.close();
+            refreshView(student.getId());
+        });
+        saveBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        Button cancelBtn = new Button("Hủy", e -> dialog.close());
+
+        dialog.getFooter().add(cancelBtn, saveBtn);
+        dialog.add(formLayout);
+        dialog.open();
     }
 
     private String getShortName(String majorName) {

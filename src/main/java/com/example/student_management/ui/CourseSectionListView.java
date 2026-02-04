@@ -18,7 +18,8 @@ public class CourseSectionListView extends VerticalLayout {
     public CourseSectionListView(CourseSectionRepository csRepo) {
         setSpacing(true);
         setPadding(true);
-
+        Button backBtn = new Button("⬅ Quay lại trang chủ", e -> UI.getCurrent().navigate(""));
+        add(backBtn);
         add(new H2("🏫 Danh sách các Lớp học phần đang mở"));
 
         Grid<CourseSection> grid = new Grid<>(CourseSection.class, false);
@@ -58,7 +59,6 @@ public class CourseSectionListView extends VerticalLayout {
 
         add(grid);
 
-        Button backBtn = new Button("⬅ Quay lại trang chủ", e -> UI.getCurrent().navigate(""));
-        add(backBtn);
+
     }
 }

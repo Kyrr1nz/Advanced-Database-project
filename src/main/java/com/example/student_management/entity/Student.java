@@ -40,7 +40,8 @@ public class Student {
     public String getFullName() {
         return fullName;
     }
-
+    public LocalDate getDob() {return dob;}
+    public void setDob(LocalDate dob) {this.dob = dob;}
     public com.example.student_management.entity.ClassEntity getClazz() {
         return clazz;
     }

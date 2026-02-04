@@ -39,6 +39,12 @@ public class StudentService {
     }
 
     public void save(Student student) {
+        // Trước khi lưu, bạn có thể xử lý logic tự động cộng MSSV tại đây
         studentRepository.save(student);
     }
+
+    public List<Student> findAll() {
+        return studentRepository.findAll();
+    }
+
 }

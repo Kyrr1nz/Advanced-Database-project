@@ -24,4 +24,5 @@ public class Subject {
     public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
     public Integer getCredits() { return credits; }
     public void setCredits(Integer credits) { this.credits = credits; }
+
 }
