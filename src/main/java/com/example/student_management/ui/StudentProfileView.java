@@ -126,7 +126,20 @@ public class StudentProfileView extends VerticalLayout implements HasUrlParamete
             Grid<Exam> examGrid = new Grid<>();
             examGrid.addColumn(ex -> ex.getCourseSection().getSubject().getSubjectName()).setHeader("Môn");
             examGrid.addColumn(ex -> ex.getExamDate().format(dtf) + " (" + ex.getRoom() + ")").setHeader("Ngày/Phòng");
+            // Thêm sự kiện click vào dòng trong bảng Thời khóa biểu
+            classGrid.addItemClickListener(event -> {
+                Enrollment enrollment = event.getItem();
+                if (enrollment != null && enrollment.getCourseSection() != null) {
+                    // Lấy ID của lớp học phần (Section ID)
+                    Long sectionId = enrollment.getCourseSection().getCourse_section_id();
 
+                    // Điều hướng sang trang chi tiết lớp học phần
+                    UI.getCurrent().navigate(CourseSectionDetailView.class, sectionId);
+                }
+            });
+
+// Thêm style con trỏ chuột cho người dùng biết là click được
+            classGrid.getStyle().set("cursor", "pointer");
             // LOGIC SẮP XẾP LỊCH THI THEO THỨ TỰ THỜI GIAN
             List<Exam> sortedExams = enrollments.stream()
                     .flatMap(en -> en.getCourseSection().getExams().stream())
