@@ -1,9 +1,6 @@
 package com.example.student_management.ui;
 
-import com.example.student_management.service.StudentService;
-import com.example.student_management.service.ClassService;
-import com.example.student_management.service.MajorService;
-import com.example.student_management.service.CourseSectionService;
+import com.example.student_management.service.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
@@ -20,120 +17,133 @@ public class MainView extends VerticalLayout {
     public MainView(StudentService studentService,
                     ClassService classService,
                     MajorService majorService,
-                    CourseSectionService courseSectionService, // Cần thêm Service này vào đây
+                    CourseSectionService courseSectionService,
                     JdbcTemplate jdbcTemplate) {
 
-        setSpacing(true);
-        setPadding(true);
-        setAlignItems(Alignment.CENTER);
-        getStyle().set("background-color", "#f5f7fa");
+        // Cấu hình nền và khoảng cách tổng thể
+        setSpacing(false);
+        setPadding(false);
+        setAlignItems(Alignment.STRETCH);
+        getStyle().set("background-color", "#f0f2f5") // Màu nền trung tính
+                .set("font-family", "'Inter', sans-serif");
 
-        // 1. HEADER
-        Header header = new Header();
-        header.setWidthFull();
-        header.getStyle().set("background", "linear-gradient(to right, #2b52b2, #3a7bd5)")
-                .set("padding", "20px").set("border-radius", "12px").set("color", "white");
-        H1 title = new H1("🎓 Student Management System");
-        title.getStyle().set("margin", "0").set("font-size", "24px");
-        header.add(title);
-        add(header);
+        // 1. TOP NAVIGATION BAR (Thanh điều hướng gọn gàng)
+        HorizontalLayout topBar = new HorizontalLayout();
+        topBar.setWidthFull();
+        topBar.getStyle()
+                .set("background-color", "#ffffff")
+                .set("padding", "10px 40px")
+                .set("box-shadow", "0 2px 4px rgba(0,0,0,0.05)")
+                .set("justify-content", "space-between")
+                .set("align-items", "center");
 
-        // 2. DASHBOARD OVERVIEW
-        HorizontalLayout cardsLayout = new HorizontalLayout();
-        cardsLayout.setWidthFull();
-        cardsLayout.setSpacing(true);
+        H2 logo = new H2("🎓 SMS Dashboard");
+        logo.getStyle().set("margin", "0").set("color", "#1a73e8").set("font-size", "20px");
 
-        cardsLayout.add(createDashboardCol("Students", studentService.countStudents(),
-                VaadinIcon.USERS, "#3b82f6", "View List", StudentListView.class));
-        cardsLayout.add(createDashboardCol("Majors", majorService.countMajors(),
-                VaadinIcon.ACADEMY_CAP, "#10b981", "Manage Classes", ClassListView.class));
-        cardsLayout.add(createDashboardCol("Sections", courseSectionService.countSections(), // Dùng CourseSectionService
-                VaadinIcon.BOOK, "#f59e0b", "Manage Sections", CourseSectionListView.class));
-        add(cardsLayout);
+        Span userRole = new Span("Admin Group 7");
+        userRole.getStyle().set("color", "#5f6368").set("font-weight", "500");
 
-        // 3. BOTTOM ROW: PROJECT INFO & SQL PERFORMANCE LAB
-        HorizontalLayout bottomLayout = new HorizontalLayout();
-        bottomLayout.setWidthFull();
-        bottomLayout.setSpacing(true);
-        bottomLayout.setAlignItems(Alignment.STRETCH);
-        bottomLayout.getStyle().set("margin-top", "30px");
+        topBar.add(logo, userRole);
+        add(topBar);
 
-        // --- CỘT TRÁI: PROJECT INFO & MANAGEMENT (40%) ---
-        VerticalLayout leftColumn = new VerticalLayout();
-        leftColumn.setWidth("40%");
-        leftColumn.setPadding(false);
-        leftColumn.setSpacing(true);
+        // 2. MAIN CONTENT AREA
+        VerticalLayout content = new VerticalLayout();
+        content.setPadding(true);
+        content.setMaxWidth("1400px");
+        content.getStyle().set("margin", "0 auto");
 
-        // Thẻ thông tin dự án
-        VerticalLayout infoCard = new VerticalLayout();
-        infoCard.getStyle().set("background-color", "white").set("border", "1px solid #e2e8f0")
-                .set("border-radius", "12px").set("padding", "25px");
+        // 3. STATISTIC CARDS (Thẻ thống kê hiện đại)
+        HorizontalLayout statsLayout = new HorizontalLayout();
+        statsLayout.setWidthFull();
+        statsLayout.setSpacing(true);
+        statsLayout.getStyle().set("margin-top", "20px");
 
-        H3 infoHeader = new H3("ℹ️ PROJECT INFORMATION");
-        infoHeader.getStyle().set("border-bottom", "2px solid #f3f4f6").set("width", "100%").set("padding-bottom", "10px");
+        statsLayout.add(createStatCard("Students", studentService.countStudents(), VaadinIcon.USERS, "#1a73e8", StudentListView.class));
+        statsLayout.add(createStatCard("Majors", majorService.countMajors(), VaadinIcon.ACADEMY_CAP, "#34a853", ClassListView.class));
+        statsLayout.add(createStatCard("Sections", courseSectionService.countSections(), VaadinIcon.NOTEBOOK, "#f9ab00", CourseSectionListView.class));
+        content.add(statsLayout);
 
-        Div content = new Div();
-        content.add(new Paragraph("Project: Student Management System"));
-        content.add(new Paragraph("Course : Advanced Database Systems"));
-        content.add(new Paragraph("Group  : 7"));
+        // 4. BOTTOM GRID: PROJECT & LAB
+        HorizontalLayout bottomGrid = new HorizontalLayout();
+        bottomGrid.setWidthFull();
+        bottomGrid.setSpacing(true);
+        bottomGrid.getStyle().set("margin-top", "24px");
+
+        // --- CỘT TRÁI: PROJECT INFO ---
+        VerticalLayout leftSide = new VerticalLayout();
+        leftSide.setWidth("35%");
+        leftSide.setPadding(false);
+
+        Div infoCard = new Div();
+        infoCard.setWidthFull();
+        infoCard.getStyle()
+                .set("background", "white")
+                .set("border-radius", "12px")
+                .set("padding", "24px")
+                .set("box-shadow", "0 1px 3px rgba(0,0,0,0.1)");
+
+        H3 infoHeader = new H3("Project Information");
+        infoHeader.getStyle().set("margin-top", "0").set("border-bottom", "1px solid #eee").set("padding-bottom", "10px");
+
+        infoCard.add(infoHeader);
+        infoCard.add(new Paragraph("🚀 System: Student Management"));
+        infoCard.add(new Paragraph("📚 Course: Advanced Database Systems"));
+        infoCard.add(new Paragraph("👥 Group: 7"));
+
         UnorderedList members = new UnorderedList(
                 new ListItem("Bảo Khang"), new ListItem("Đình Quốc"),
                 new ListItem("Duy Thành"), new ListItem("Đình Phước")
         );
-        content.add(new Span("Members:"), members);
-        infoCard.add(infoHeader, content);
+        infoCard.add(new Span("Core Members:"), members);
 
-        // --- MANAGEMENT COMPONENT ---
-        // Khởi tạo và truyền đủ 4 Service cho Khang
-        ManagementComponent managementPart = new ManagementComponent(
-                studentService,
-                classService,
-                majorService,
-                courseSectionService
-        );
-        managementPart.getStyle().set("background-color", "white")
-                .set("border", "1px solid #e2e8f0")
-                .set("border-radius", "12px");
+        // Quick Management Integration
+        ManagementComponent managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
+        managePart.getStyle().set("margin-top", "20px").set("border-radius", "12px");
 
-        leftColumn.add(infoCard, managementPart);
+        leftSide.add(infoCard, managePart);
 
-        // --- CỘT PHẢI: SQL PERFORMANCE LAB (60%) ---
+        // --- CỘT PHẢI: SQL LAB ---
         SqlPerformanceLab sqlLab = new SqlPerformanceLab(jdbcTemplate);
-        sqlLab.setWidth("60%");
-        sqlLab.getStyle().set("margin", "0");
+        sqlLab.setWidth("65%");
+        sqlLab.getStyle()
+                .set("background", "white")
+                .set("border-radius", "12px")
+                .set("box-shadow", "0 1px 3px rgba(0,0,0,0.1)");
 
-        bottomLayout.add(leftColumn, sqlLab);
-        add(bottomLayout);
+        bottomGrid.add(leftSide, sqlLab);
+        content.add(bottomGrid);
+
+        add(content);
     }
 
-    private VerticalLayout createDashboardCol(String title, long value, VaadinIcon icon, String color, String btnText, Class<? extends com.vaadin.flow.component.Component> targetView) {
-        VerticalLayout col = new VerticalLayout();
-        col.setAlignItems(Alignment.CENTER);
-        col.setPadding(false);
-        col.getStyle().set("flex", "1");
+    private VerticalLayout createStatCard(String title, long value, VaadinIcon icon, String color, Class<? extends com.vaadin.flow.component.Component> targetView) {
+        VerticalLayout card = new VerticalLayout();
+        card.setPadding(true);
+        card.setSpacing(false);
+        card.getStyle()
+                .set("background", "white")
+                .set("border-radius", "12px")
+                .set("box-shadow", "0 1px 2px rgba(0,0,0,0.06)")
+                .set("border-left", "5px solid " + color)
+                .set("cursor", "pointer")
+                .set("transition", "transform 0.2s");
 
-        Div badge = new Div();
-        badge.setWidthFull();
-        badge.getStyle().set("padding", "25px").set("border-radius", "12px 12px 0 0")
-                .set("background-color", "white").set("border-top", "5px solid " + color)
-                .set("text-align", "center").set("box-shadow", "0 4px 6px rgba(0,0,0,0.05)");
+        card.getElement().executeJs("this.addEventListener('mouseenter', () => { this.style.transform = 'translateY(-5px)'; });");
+        card.getElement().executeJs("this.addEventListener('mouseleave', () => { this.style.transform = 'translateY(0)'; });");
+        card.addClickListener(e -> UI.getCurrent().navigate(targetView));
 
-        Icon vIcon = icon.create();
-        vIcon.getStyle().set("color", color).set("font-size", "2rem");
-        H1 count = new H1(String.valueOf(value));
-        count.getStyle().set("margin", "10px 0");
-        Span label = new Span(title);
-        label.getStyle().set("color", "#64748b").set("font-weight", "bold");
-        badge.add(vIcon, count, label);
+        HorizontalLayout header = new HorizontalLayout();
+        header.setAlignItems(Alignment.CENTER);
+        Icon i = icon.create();
+        i.getStyle().set("color", color);
+        Span s = new Span(title);
+        s.getStyle().set("color", "#5f6368").set("font-weight", "600");
+        header.add(i, s);
 
-        Button actionBtn = new Button(btnText, e -> UI.getCurrent().navigate(targetView));
-        actionBtn.setWidthFull();
-        actionBtn.getStyle()
-                .set("background-color", color).set("color", "white")
-                .set("border-radius", "0 0 12px 12px").set("height", "50px")
-                .set("font-weight", "bold").set("cursor", "pointer");
+        H1 val = new H1(String.valueOf(value));
+        val.getStyle().set("margin", "10px 0 0 0").set("font-size", "32px");
 
-        col.add(badge, actionBtn);
-        return col;
+        card.add(header, val);
+        return card;
     }
 }
