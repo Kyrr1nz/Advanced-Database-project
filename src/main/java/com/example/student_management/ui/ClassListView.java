@@ -35,7 +35,8 @@ public class ClassListView extends VerticalLayout {
 
         grid.addColumn(c -> c.getMajor() != null ? c.getMajor().getMajorName() : "N/A")
                 .setHeader("Chuyên ngành")
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setSortable(true);
 
         // Đổ dữ liệu từ service vào grid
         grid.setItems(classService.findAll());
