@@ -20,9 +20,9 @@ public class StudentListView extends VerticalLayout {
         grid.addColumn(Student::getFullName).setHeader("Họ Tên").setSortable(true);
 
         // Hiển thị Lớp và Ngành (Dữ liệu từ Class và Major entity)
-        grid.addColumn(s -> s.getClazz() != null ? s.getClazz().getClassName() : "N/A").setHeader("Lớp học");
+        grid.addColumn(s -> s.getClazz() != null ? s.getClazz().getClassName() : "N/A").setHeader("Lớp học").setSortable(true);
         grid.addColumn(s -> (s.getClazz() != null && s.getClazz().getMajor() != null)
-                ? s.getClazz().getMajor().getMajorName() : "N/A").setHeader("Chuyên ngành");
+                ? s.getClazz().getMajor().getMajorName() : "N/A").setHeader("Chuyên ngành").setSortable(true);
 
         grid.setItems(service.findAllForList());
 
