@@ -41,7 +41,21 @@ public class ManagementComponent extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
     }
+    public void openEditDialog(Object entity) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Chỉnh sửa thông tin");
+        VerticalLayout container = new VerticalLayout();
 
+        if (entity instanceof Student s) {
+            renderFullStudentForm(container, dialog);
+
+        } else if (entity instanceof ClassEntity c) {
+            renderFullClassForm(container, dialog);
+        }
+
+        dialog.add(container);
+        dialog.open();
+    }
     private void openManagementDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Quản lý dữ liệu & Học phần");
@@ -164,5 +178,6 @@ public class ManagementComponent extends VerticalLayout {
 
         form.add(studentBox, enrollDate, sectionBox);
         container.add(form, save);
+
     }
 }

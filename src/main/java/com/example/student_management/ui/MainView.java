@@ -1,9 +1,12 @@
 
 package com.example.student_management.ui;
 
+import com.example.student_management.entity.ClassEntity;
+import com.example.student_management.entity.Student;
 import com.example.student_management.service.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -12,14 +15,23 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
+import java.io.Console;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 @Route("")
 @PermitAll
 public class MainView extends VerticalLayout {
+    // Khai báo ở đây để dùng được trong toàn bộ Class
+    private ManagementComponent managePart;
+    private ComboBox<Object> globalSearch;
 
     public MainView(StudentService studentService,
                     ClassService classService,
                     MajorService majorService,
                     CourseSectionService courseSectionService) {
+        this.managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
 
         // Cấu hình nền và khoảng cách tổng thể
         setSpacing(false);
@@ -47,6 +59,52 @@ public class MainView extends VerticalLayout {
         topBar.add(logo, userRole);
         add(topBar);
 
+    //Find student/class global
+        ComboBox<Object> globalSearch = new ComboBox<>("");
+        globalSearch.setPlaceholder("Tìm sinh viên, lớp hoặc môn học...");
+        globalSearch.setWidth("400px");
+        globalSearch.setClearButtonVisible(true);
+        globalSearch.setPrefixComponent(VaadinIcon.SEARCH.create());
+        globalSearch.setItems(
+                query -> {
+                    // Lấy thông số phân trang (bắt buộc phải gọi để tránh lỗi trên)
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+
+                    String filter = query.getFilter().orElse("").trim();
+                    if (filter.isEmpty()) {
+                        return Stream.empty();
+                    }
+
+                    List<Object> results = new ArrayList<>();
+                    results.addAll(studentService.search(filter));
+                    results.addAll(classService.search(filter));
+
+                    // Cắt bớt danh sách dựa trên yêu cầu của Vaadin (để thỏa mãn 'contract')
+                    return results.stream().skip(offset).limit(limit);
+                }
+        );
+        globalSearch.setItemLabelGenerator(item -> {
+            if (item instanceof Student s) {
+                String name = s.getFullName() != null ? s.getFullName() : "Không tên";
+                String code = s.getMssv() != null ? s.getMssv() : "N/A";
+                return "🎓 SV: " + name + " (" + code + ")";
+            } else if (item instanceof ClassEntity c) {
+                return "🏫 Lớp: " + (c.getClassName() != null ? c.getClassName() : "Chưa đặt tên");
+            }
+            return "";
+        });
+
+
+        globalSearch.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                // Gọi method mở Dialog CRUD từ ManagementComponent
+                managePart.openEditDialog(e.getValue());
+                globalSearch.clear();
+            }
+        });
+
+        topBar.add(logo, globalSearch, userRole);
         // 2. MAIN CONTENT AREA
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);

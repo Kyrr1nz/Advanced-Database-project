@@ -33,7 +33,9 @@ public class StudentService {
     public List<Enrollment> getStudentFullProfile(Long studentId) {
         return enrollmentRepository.findFullDetailsByStudentId(studentId);
     }
-
+    public List<Student> search(String keyword) {
+        return studentRepository.findByFullNameContainingIgnoreCaseOrMssvContainingIgnoreCase(keyword, keyword);
+    }
     public Optional<Student> findById(Long id) {
         return studentRepository.findById(id);
     }

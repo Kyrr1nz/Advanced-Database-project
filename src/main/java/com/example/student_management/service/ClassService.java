@@ -22,6 +22,10 @@ public class ClassService {
         return classRepository.count();
     }
 
+    public List<ClassEntity> search(String keyword) {
+        return classRepository.findByClassNameContainingIgnoreCase(keyword);
+    }
+
     public Optional<ClassEntity> findById(Long id) {
         return classRepository.findById(id);
     }

@@ -14,4 +14,5 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             "LEFT JOIN FETCH s.clazz c " +
             "LEFT JOIN FETCH c.major m")
     List<Student> findAllWithBasicInfo();
+    List<Student> findByFullNameContainingIgnoreCaseOrMssvContainingIgnoreCase(String fullName, String mssv);
 }
