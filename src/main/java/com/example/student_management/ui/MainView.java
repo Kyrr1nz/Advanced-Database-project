@@ -1,4 +1,3 @@
-
 package com.example.student_management.ui;
 
 import com.example.student_management.entity.ClassEntity;
@@ -12,18 +11,15 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.router.*;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Route("")
-@PermitAll
-public class MainView extends VerticalLayout {
-    // Khai báo ở đây để dùng được trong toàn bộ Class
+public class MainView extends VerticalLayout implements BeforeEnterObserver {
+
     private ManagementComponent managePart;
     private ComboBox<Object> globalSearch;
 
@@ -31,16 +27,19 @@ public class MainView extends VerticalLayout {
                     ClassService classService,
                     MajorService majorService,
                     CourseSectionService courseSectionService) {
+
         this.managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
 
-        // Cấu hình nền và khoảng cách tổng thể
+        // UI config
         setSpacing(false);
         setPadding(false);
         setAlignItems(Alignment.STRETCH);
         getStyle().set("background-color", "#f0f2f5")
                 .set("font-family", "'Inter', sans-serif");
 
-        // 1. TOP NAVIGATION BAR
+        // =========================
+        // 🔝 TOP BAR
+        // =========================
         HorizontalLayout topBar = new HorizontalLayout();
         topBar.setWidthFull();
         topBar.getStyle()
@@ -56,34 +55,35 @@ public class MainView extends VerticalLayout {
         Span userRole = new Span("Admin Group 7");
         userRole.getStyle().set("color", "#5f6368").set("font-weight", "500");
 
-        topBar.add(logo, userRole);
-        add(topBar);
-
-    //Find student/class global
-        ComboBox<Object> globalSearch = new ComboBox<>("");
+        // =========================
+        // 🔍 SEARCH (GIỮ NGUYÊN LOGIC)
+        // =========================
+        globalSearch = new ComboBox<>("");
         globalSearch.setPlaceholder("Tìm sinh viên, lớp hoặc môn học...");
         globalSearch.setWidth("400px");
         globalSearch.setClearButtonVisible(true);
         globalSearch.setPrefixComponent(VaadinIcon.SEARCH.create());
-        globalSearch.setItems(
-                query -> {
-                    // Lấy thông số phân trang (bắt buộc phải gọi để tránh lỗi trên)
-                    int offset = query.getOffset();
-                    int limit = query.getLimit();
 
-                    String filter = query.getFilter().orElse("").trim();
-                    if (filter.isEmpty()) {
-                        return Stream.empty();
-                    }
+        globalSearch.setItems(query -> {
+            int offset = query.getOffset();
+            int limit = query.getLimit();
 
-                    List<Object> results = new ArrayList<>();
-                    results.addAll(studentService.search(filter));
-                    results.addAll(classService.search(filter));
+            String filter = query.getFilter().orElse("").trim();
+            if (filter.isEmpty()) {
+                return Stream.empty();
+            }
 
-                    // Cắt bớt danh sách dựa trên yêu cầu của Vaadin (để thỏa mãn 'contract')
-                    return results.stream().skip(offset).limit(limit);
-                }
-        );
+            List<Object> results = new ArrayList<>();
+
+            List<Student> students = studentService.search(filter);
+            List<ClassEntity> classes = classService.search(filter);
+
+            if (students != null) results.addAll(students);
+            if (classes != null) results.addAll(classes);
+
+            return results.stream().skip(offset).limit(limit);
+        });
+
         globalSearch.setItemLabelGenerator(item -> {
             if (item instanceof Student s) {
                 String name = s.getFullName() != null ? s.getFullName() : "Không tên";
@@ -95,34 +95,48 @@ public class MainView extends VerticalLayout {
             return "";
         });
 
-
         globalSearch.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
-                // Gọi method mở Dialog CRUD từ ManagementComponent
+            if (e.getValue() != null && managePart != null) {
                 managePart.openEditDialog(e.getValue());
                 globalSearch.clear();
             }
         });
 
-        topBar.add(logo, globalSearch, userRole);
-        // 2. MAIN CONTENT AREA
+        // =========================
+        // 🔓 LOGOUT
+        // =========================
+        Button logoutBtn = new Button("Logout", e -> {
+            UI.getCurrent().getSession().setAttribute("user", null);
+            UI.getCurrent().navigate("login");
+        });
+
+        logoutBtn.getStyle()
+                .set("background", "#ea4335")
+                .set("color", "white");
+
+        topBar.add(logo, globalSearch, userRole, logoutBtn);
+        add(topBar);
+
+        // =========================
+        // 📦 CONTENT
+        // =========================
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setMaxWidth("1400px");
         content.getStyle().set("margin", "0 auto");
 
-        // 3. STATISTIC CARDS
         HorizontalLayout statsLayout = new HorizontalLayout();
         statsLayout.setWidthFull();
         statsLayout.setSpacing(true);
         statsLayout.getStyle().set("margin-top", "20px");
 
-        statsLayout.add(createStatCard("Students", studentService.countStudents(), VaadinIcon.USERS, "#1a73e8", StudentListView.class));
-        statsLayout.add(createStatCard("Majors", majorService.countMajors(), VaadinIcon.ACADEMY_CAP, "#34a853", ClassListView.class));
-        statsLayout.add(createStatCard("Sections", courseSectionService.countSections(), VaadinIcon.NOTEBOOK, "#f9ab00", CourseSectionListView.class));
-        content.add(statsLayout);
+        statsLayout.add(
+                createStatCard("Students", studentService.countStudents(), VaadinIcon.USERS, "#1a73e8", StudentListView.class),
+                createStatCard("Majors", majorService.countMajors(), VaadinIcon.ACADEMY_CAP, "#34a853", ClassListView.class),
+                createStatCard("Sections", courseSectionService.countSections(), VaadinIcon.NOTEBOOK, "#f9ab00", CourseSectionListView.class)
+        );
 
-        // 4. BOTTOM AREA: PROJECT INFO & MANAGEMENT
+        content.add(statsLayout);
 
         VerticalLayout mainBottomLayout = new VerticalLayout();
         mainBottomLayout.setWidthFull();
@@ -130,7 +144,6 @@ public class MainView extends VerticalLayout {
         mainBottomLayout.setSpacing(true);
         mainBottomLayout.getStyle().set("margin-top", "24px");
 
-        // --- PROJECT INFO CARD ---
         Div infoCard = new Div();
         infoCard.setWidthFull();
         infoCard.getStyle()
@@ -139,12 +152,7 @@ public class MainView extends VerticalLayout {
                 .set("padding", "24px")
                 .set("box-shadow", "0 1px 3px rgba(0,0,0,0.1)");
 
-        H3 infoHeader = new H3("Project Information");
-        infoHeader.getStyle().set("margin-top", "0").set("border-bottom", "1px solid #eee").set("padding-bottom", "10px");
-
-        // --- MANAGEMENT COMPONENT ---
         ManagementComponent managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
-        managePart.getStyle().set("margin-top", "20px").set("border-radius", "12px");
         managePart.setWidthFull();
 
         mainBottomLayout.add(infoCard, managePart);
@@ -153,7 +161,18 @@ public class MainView extends VerticalLayout {
         add(content);
     }
 
-    private VerticalLayout createStatCard(String title, long value, VaadinIcon icon, String color, Class<? extends com.vaadin.flow.component.Component> targetView) {
+    // ✅ LOGIN GUARD CHUẨN (KHÔNG BUG REFRESH)
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Object user = UI.getCurrent().getSession().getAttribute("user");
+        if (user == null) {
+            event.forwardTo("login");
+        }
+    }
+
+    private VerticalLayout createStatCard(String title, long value, VaadinIcon icon, String color,
+                                          Class<? extends com.vaadin.flow.component.Component> targetView) {
+
         VerticalLayout card = new VerticalLayout();
         card.setPadding(true);
         card.setSpacing(false);
@@ -162,25 +181,22 @@ public class MainView extends VerticalLayout {
                 .set("border-radius", "12px")
                 .set("box-shadow", "0 1px 2px rgba(0,0,0,0.06)")
                 .set("border-left", "5px solid " + color)
-                .set("cursor", "pointer")
-                .set("transition", "transform 0.2s");
+                .set("cursor", "pointer");
 
-        card.getElement().executeJs("this.addEventListener('mouseenter', () => { this.style.transform = 'translateY(-5px)'; });");
-        card.getElement().executeJs("this.addEventListener('mouseleave', () => { this.style.transform = 'translateY(0)'; });");
         card.addClickListener(e -> UI.getCurrent().navigate(targetView));
 
         HorizontalLayout header = new HorizontalLayout();
         header.setAlignItems(Alignment.CENTER);
+
         Icon i = icon.create();
         i.getStyle().set("color", color);
+
         Span s = new Span(title);
         s.getStyle().set("color", "#5f6368").set("font-weight", "600");
+
         header.add(i, s);
-
-
         card.add(header);
-        card.setHeight("80px");
-        card.setJustifyContentMode(JustifyContentMode.CENTER);
+
         return card;
     }
 }
