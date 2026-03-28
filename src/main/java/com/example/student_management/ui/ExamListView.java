@@ -13,7 +13,7 @@ import com.vaadin.flow.router.Route;
 public class ExamListView extends VerticalLayout {
 
     public ExamListView(ExamService examService) {
-        add(new Button("⬅ Quay lại Dashboard", e -> UI.getCurrent().navigate(MainView.class)));
+        add(new Button("⬅ Back to Dashboard", e -> UI.getCurrent().navigate(MainView.class)));
         setSizeFull();
 
         Grid<Exam> grid = new Grid<>(Exam.class, false);
@@ -23,24 +23,23 @@ public class ExamListView extends VerticalLayout {
             CourseSection cs = exam.getCourseSection();
             if (cs == null || cs.getSubject() == null) return "N/A";
             return cs.getSubject().getSubjectName();
-        }).setHeader("Môn học");
-
-        // 🎯 Cột LỚP (SECTION)
-        grid.addColumn(exam -> {
-            CourseSection cs = exam.getCourseSection();
-            if (cs == null) return "N/A";
-            return cs.getSectionName() != null ? cs.getSectionName() : "N/A";
-        }).setHeader("Lớp");
+        }).setHeader("Course").setSortable(true);
 
         // 📅 Ngày thi
         grid.addColumn(Exam::getExamDate)
-                .setHeader("Ngày thi");
+                .setHeader("Date").setSortable(true);
 
         // 🏫 Phòng
         grid.addColumn(Exam::getRoom)
-                .setHeader("Phòng");
+                .setHeader("Room").setSortable(true);
 
         grid.setItems(examService.getAllExams());
+
+        // ✅ CLICK ROW → SANG TRANG DETAIL
+        grid.addItemClickListener(event -> {
+            Long examId = event.getItem().getExamId();
+            UI.getCurrent().navigate("exam-detail/" + examId);
+        });
 
         add(grid);
     }

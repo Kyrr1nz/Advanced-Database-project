@@ -21,6 +21,13 @@ public class Exam {
     private com.example.student_management.entity.CourseSection courseSection;
 
     // Getter & Setter
+    public Long getExamId() {
+        return exam_id;
+    }
+
+    public void setExamId(Long exam_id) {
+        this.exam_id = exam_id;
+    }
     public LocalDate getExamDate() { return examDate; }
     public String getRoom() { return room; }
     public CourseSection getCourseSection() {return courseSection;}
