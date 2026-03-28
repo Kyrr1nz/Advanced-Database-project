@@ -44,6 +44,11 @@ public class StudentService {
         // Trước khi lưu, bạn có thể xử lý logic tự động cộng MSSV tại đây
         studentRepository.save(student);
     }
+    public void delete(Student student) {
+        if (student != null && student.getId() != null) {
+            studentRepository.delete(student);
+        }
+    }
 
     public List<Student> findAll() {
         return studentRepository.findAll();

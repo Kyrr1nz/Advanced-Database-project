@@ -28,4 +28,5 @@ public class Exam {
     public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
     public void setRoom(String room) { this.room = room; }
 
+
 }

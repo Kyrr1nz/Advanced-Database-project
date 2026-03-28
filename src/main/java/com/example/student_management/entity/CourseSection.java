@@ -18,7 +18,7 @@ public class CourseSection {
 
     private LocalDate startDate;
     private LocalDate endDate;
-
+    private String sectionName;
     @ManyToOne
     @JoinColumn(name = "subject_id")
     private Subject subject;
@@ -34,6 +34,13 @@ public class CourseSection {
     private Set<Enrollment> enrollments = new HashSet<>();
 
     // Getter & Setter
+    public String getSectionName() {
+        return sectionName;
+    }
+
+    public void setSectionName(String sectionName) {
+        this.sectionName = sectionName;
+    }
     public Long getCourse_section_id() { return course_section_id; }
     public Subject getSubject() { return subject; }
     public void setSubject(Subject subject) { this.subject = subject; }
@@ -49,5 +56,9 @@ public class CourseSection {
     public void setCourse_year(Integer course_year) {this.course_year = course_year; }
     public Integer getCourse_year() {return course_year;}
     public Set<Enrollment> getEnrollments() { return enrollments; }
-
+    @Override
+    public String toString() {
+        String subjectName = (subject != null) ? subject.getSubjectName() : "N/A";
+        return subjectName + " - Lớp " + course_section_id;
+    }
 }

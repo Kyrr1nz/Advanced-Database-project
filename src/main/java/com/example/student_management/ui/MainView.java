@@ -1,5 +1,7 @@
 package com.example.student_management.ui;
 
+import com.example.student_management.entity.Exam;
+import java.util.List;
 import com.example.student_management.entity.ClassEntity;
 import com.example.student_management.entity.Student;
 import com.example.student_management.service.*;
@@ -26,7 +28,8 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     public MainView(StudentService studentService,
                     ClassService classService,
                     MajorService majorService,
-                    CourseSectionService courseSectionService) {
+                    CourseSectionService courseSectionService,
+                    ExamService examService) {
 
         this.managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
 
@@ -133,7 +136,8 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         statsLayout.add(
                 createStatCard("Students", studentService.countStudents(), VaadinIcon.USERS, "#1a73e8", StudentListView.class),
                 createStatCard("Majors", majorService.countMajors(), VaadinIcon.ACADEMY_CAP, "#34a853", ClassListView.class),
-                createStatCard("Sections", courseSectionService.countSections(), VaadinIcon.NOTEBOOK, "#f9ab00", CourseSectionListView.class)
+                createStatCard("Sections", courseSectionService.countSections(), VaadinIcon.NOTEBOOK, "#f9ab00", CourseSectionListView.class),
+                createStatCard("Exams", examService.getAllExams().size(), VaadinIcon.CALENDAR, "#8e24aa", ExamListView.class)
         );
 
         content.add(statsLayout);
