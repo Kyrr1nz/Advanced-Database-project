@@ -63,8 +63,8 @@ public class LoginView extends VerticalLayout {
         // 🔘 LOGIN BUTTON
         // =========================
         Button loginBtn = new Button("Login", e -> {
-            if ("admin".equals(username.getValue()) &&
-                    "123".equals(password.getValue())) {
+            if ("hutechadmin".equals(username.getValue()) &&
+                    "123@".equals(password.getValue())) {
 
                 UI.getCurrent().getSession().setAttribute("user", username.getValue());
                 UI.getCurrent().navigate("");
