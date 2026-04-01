@@ -2,6 +2,7 @@ package com.example.student_management.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "teacher")
@@ -16,8 +17,13 @@ public class Teacher {
     private String email;
     private String phone;
 
-    @OneToMany(mappedBy = "teacher")
-    private List<com.example.student_management.entity.CourseSection> courseSections;
+    @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CourseSection> courseSections;
+
+    @OneToOne(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Supervisor supervisor;
 
     // Getter & Setter
     public Long getId() { return teacher_id; }

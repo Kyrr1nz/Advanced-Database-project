@@ -18,22 +18,25 @@ public class Exam {
 
     @ManyToOne
     @JoinColumn(name = "section_id")
-    private com.example.student_management.entity.CourseSection courseSection;
+    private CourseSection courseSection;
+
+    @ManyToOne
+    @JoinColumn(name = "sid") // Khớp với SID của Supervisor trong ERD
+    private Supervisor supervisor;
 
     // Getter & Setter
-    public Long getExamId() {
-        return exam_id;
-    }
+    public Long getExamId() { return exam_id; }
+    public void setExamId(Long exam_id) { this.exam_id = exam_id; }
 
-    public void setExamId(Long exam_id) {
-        this.exam_id = exam_id;
-    }
     public LocalDate getExamDate() { return examDate; }
-    public String getRoom() { return room; }
-    public CourseSection getCourseSection() {return courseSection;}
-    public void setCourseSection(com.example.student_management.entity.CourseSection courseSection) { this.courseSection = courseSection; }
     public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
+
+    public String getRoom() { return room; }
     public void setRoom(String room) { this.room = room; }
 
+    public CourseSection getCourseSection() { return courseSection; }
+    public void setCourseSection(CourseSection courseSection) { this.courseSection = courseSection; }
 
+    public Supervisor getSupervisor() { return supervisor; }
+    public void setSupervisor(Supervisor supervisor) { this.supervisor = supervisor; }
 }

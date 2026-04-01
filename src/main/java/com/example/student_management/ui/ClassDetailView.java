@@ -38,7 +38,7 @@ public class ClassDetailView extends VerticalLayout implements HasUrlParameter<L
     public void setParameter(BeforeEvent event, Long classId) {
         container.removeAll();
 
-        classService.findById(classId).ifPresent(classEntity -> {
+        classService.findByIdWithStudents(classId).ifPresent(classEntity -> {
 
             // 1. THANH ĐIỀU HƯỚNG (Navigation Row): Trái (Quay lại) - Phải (Trang chủ)
             HorizontalLayout navRow = new HorizontalLayout();

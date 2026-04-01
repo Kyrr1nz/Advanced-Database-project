@@ -2,8 +2,7 @@ package com.example.student_management.ui;
 
 import com.example.student_management.entity.Exam;
 import java.util.List;
-import com.example.student_management.entity.ClassEntity;
-import com.example.student_management.entity.Student;
+import com.example.student_management.entity.*;
 import com.example.student_management.service.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -11,6 +10,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
@@ -29,7 +29,8 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                     ClassService classService,
                     MajorService majorService,
                     CourseSectionService courseSectionService,
-                    ExamService examService) {
+                    ExamService examService,
+                    SubjectService subjectService) {
 
         this.managePart = new ManagementComponent(studentService, classService, majorService, courseSectionService);
 
@@ -80,9 +81,11 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
             List<Student> students = studentService.search(filter);
             List<ClassEntity> classes = classService.search(filter);
+            List<Subject> subjects = subjectService.search(filter);
 
             if (students != null) results.addAll(students);
             if (classes != null) results.addAll(classes);
+            if (subjects != null) results.addAll(subjects);
 
             return results.stream().skip(offset).limit(limit);
         });
@@ -94,14 +97,34 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                 return "🎓 SV: " + name + " (" + code + ")";
             } else if (item instanceof ClassEntity c) {
                 return "🏫 Lớp: " + (c.getClassName() != null ? c.getClassName() : "Chưa đặt tên");
+            } else if (item instanceof Subject sub) {
+                return "📚 Môn: " + (sub.getSubjectName() != null ? sub.getSubjectName() : "N/A");
             }
-            return "";
+            return "Kết quả khác";
         });
 
         globalSearch.addValueChangeListener(e -> {
-            if (e.getValue() != null && managePart != null) {
-                managePart.openEditDialog(e.getValue());
-                globalSearch.clear();
+            Object selected = e.getValue();
+            if (selected != null) {
+                if (selected instanceof Student s) {
+                    // Dẫn đến trang Hồ sơ sinh viên (StudentProfileView)
+                    UI.getCurrent().navigate(StudentProfileView.class, s.getId());
+
+                } else if (selected instanceof ClassEntity c) {
+                    // Dẫn đến trang Chi tiết lớp học (ClassDetailView)
+                    UI.getCurrent().navigate(ClassDetailView.class, c.getClass_id());
+
+                } else if (selected instanceof Subject sub) {
+                    /**
+                     * Lưu ý: Trang CourseSectionDetailView của Khang nhận tham số là sectionId.
+                     * Vì 1 môn học (Subject) có thể có nhiều lớp học phần, nên Khang cần cân nhắc:
+                     * Cách 1: Dẫn tới trang danh sách lớp học phần của môn đó (nếu có).
+                     * Cách 2: Nếu Khang muốn dẫn thẳng vào chi tiết, ta cần lấy 1 Section ID mẫu.
+                     */
+                    Notification.show("Môn học: " + sub.getSubjectName() + " - Hãy chọn lớp học phần cụ thể trong Profile SV.");
+                }
+
+                globalSearch.clear(); // Xóa thanh tìm kiếm sau khi nhảy trang
             }
         });
 

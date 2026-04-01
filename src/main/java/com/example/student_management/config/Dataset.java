@@ -15,7 +15,7 @@ public class Dataset {
     CommandLineRunner loadData(StudentRepository sRepo, MajorRepository mRepo,
                                ClassRepository cRepo, SubjectRepository subRepo,
                                TeacherRepository tRepo, CourseSectionRepository csRepo,
-                               EnrollmentRepository eRepo, ExamRepository exRepo) {
+                               EnrollmentRepository eRepo, ExamRepository exRepo, SupervisorRepository svRepo) {
         return args -> {
             Random rand = new Random();
 
@@ -41,13 +41,24 @@ public class Dataset {
             }
 
             // 3. GIẢNG VIÊN
-            String[] tNames = {"TS. Lê Nam", "ThS. Minh Hà", "PGS. Hoài An", "TS. Quốc Bảo", "ThS. Thu Trang", "TS. Văn Dũng"};
+            String[] tNames = {"Lê Nam", "Minh Hà", "Hoài An", "Quốc Bảo", "Thu Trang", "Văn Dũng", "Thanh Tùng", "Ngọc Mai"};
             List<Teacher> teachers = new ArrayList<>();
+            List<Supervisor> supervisors = new ArrayList<>();
+
             for (String tn : tNames) {
                 Teacher t = new Teacher();
-                t.setFullName(tn);
-                t.setEmail(tn.toLowerCase().replaceAll("[^a-z]", "") + "@university.edu.vn");
-                teachers.add(tRepo.save(t));
+                t.setFullName("TS. " + tn);
+                t.setEmail(tn.toLowerCase().replaceAll("\\s+", "") + "@university.edu.vn");
+                t.setPhone("09" + (10000000 + rand.nextInt(90000000)));
+                Teacher savedTeacher = tRepo.save(t);
+                teachers.add(savedTeacher);
+
+                Supervisor sv = new Supervisor();
+                sv.setsName(savedTeacher.getFullName());
+                sv.setsNumber("SV-" + (1000 + rand.nextInt(9000)));
+                sv.setsSubject("Giám thị " + (rand.nextInt(5) + 1));
+                sv.setTeacher(savedTeacher);
+                supervisors.add(svRepo.save(sv));
             }
 
             // 4. MÔN HỌC
@@ -145,14 +156,18 @@ public class Dataset {
             }
 
             // 7. LỊCH THI
+            List<Exam> examsToSave = new ArrayList<>();
             for (CourseSection sec : allSections) {
                 Exam ex = new Exam();
                 ex.setCourseSection(sec);
                 ex.setExamDate(sec.getEndDate().plusDays(7 + rand.nextInt(7)));
                 ex.setRoom("Phòng " + (100 + rand.nextInt(100)));
+                if (!supervisors.isEmpty()) {
+                    ex.setSupervisor(supervisors.get(rand.nextInt(supervisors.size())));
+                }
                 exRepo.save(ex);
             }
-
+            exRepo.saveAll(examsToSave);
             System.out.println("\n>>> NẠP XONG DỮ LIỆU HỆ THỐNG!");
         };
     }

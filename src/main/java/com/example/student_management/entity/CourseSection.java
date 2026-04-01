@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "course_section")
@@ -27,11 +28,13 @@ public class CourseSection {
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
-    @OneToMany(mappedBy = "courseSection")
-    private Set<Exam> exams;
-
-    @OneToMany(mappedBy = "courseSection", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "courseSection", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Enrollment> enrollments = new HashSet<>();
+
+    @OneToMany(mappedBy = "courseSection", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Exam> exams;
 
     // Getter & Setter
     public String getSectionName() {

@@ -22,15 +22,18 @@ public class ManagementComponent extends VerticalLayout {
     private final ClassService classService;
     private final MajorService majorService;
     private final CourseSectionService courseSectionService;
+    private final EnrollmentService enrollmentService; // Cần thêm service này
 
     public ManagementComponent(StudentService studentService,
                                ClassService classService,
                                MajorService majorService,
-                               CourseSectionService courseSectionService) {
+                               CourseSectionService courseSectionService,
+                               EnrollmentService enrollmentService) {
         this.studentService = studentService;
         this.classService = classService;
         this.majorService = majorService;
         this.courseSectionService = courseSectionService;
+        this.enrollmentService = enrollmentService;
 
         Button addBtn = new Button("➕ Thêm mới dữ liệu");
         addBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
@@ -41,21 +44,23 @@ public class ManagementComponent extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
     }
+
+    // --- HÀM MỞ DIALOG CHỈNH SỬA (EDIT) ---
     public void openEditDialog(Object entity) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Chỉnh sửa thông tin");
         VerticalLayout container = new VerticalLayout();
 
         if (entity instanceof Student s) {
-            renderFullStudentForm(container, dialog);
-
+            renderFullStudentForm(container, dialog, s);
         } else if (entity instanceof ClassEntity c) {
-            renderFullClassForm(container, dialog);
+            renderFullClassForm(container, dialog, c);
         }
 
         dialog.add(container);
         dialog.open();
     }
+
     private void openManagementDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Quản lý dữ liệu & Học phần");
@@ -72,8 +77,9 @@ public class ManagementComponent extends VerticalLayout {
         actionSelect.addValueChangeListener(event -> {
             formContainer.removeAll();
             String selected = event.getValue();
-            if ("Thêm Sinh viên".equals(selected)) renderFullStudentForm(formContainer, dialog);
-            else if ("Thêm Lớp học".equals(selected)) renderFullClassForm(formContainer, dialog);
+            // Truyền null cho tham số Entity khi là Thêm mới
+            if ("Thêm Sinh viên".equals(selected)) renderFullStudentForm(formContainer, dialog, null);
+            else if ("Thêm Lớp học".equals(selected)) renderFullClassForm(formContainer, dialog, null);
             else if ("Đăng ký học phần".equals(selected)) renderFullEnrollmentForm(formContainer, dialog);
         });
 
@@ -81,11 +87,13 @@ public class ManagementComponent extends VerticalLayout {
         dialog.open();
     }
 
-    private void renderFullStudentForm(VerticalLayout container, Dialog dialog) {
+    // --- FORM 1: SINH VIÊN (HỖ TRỢ CẢ THÊM VÀ SỬA) ---
+    private void renderFullStudentForm(VerticalLayout container, Dialog dialog, Student existingStudent) {
         FormLayout form = new FormLayout();
-        TextField mssv = new TextField("MSSV (Tự động)");
-        mssv.setValue("Hệ thống tự cấp...");
+
+        TextField mssv = new TextField("MSSV");
         mssv.setReadOnly(true);
+        mssv.setValue(existingStudent != null ? existingStudent.getMssv() : "Hệ thống tự cấp...");
 
         TextField name = new TextField("Họ và tên");
         name.setRequired(true);
@@ -96,88 +104,113 @@ public class ManagementComponent extends VerticalLayout {
         classBox.setItems(classService.findAll());
         classBox.setItemLabelGenerator(ClassEntity::getClassName);
 
-        Button save = new Button("Lưu Sinh viên", e -> {
-            Notification.show("Đã thêm sinh viên mới!");
+        // Nạp dữ liệu cũ nếu là Edit
+        if (existingStudent != null) {
+            name.setValue(existingStudent.getFullName());
+            if (existingStudent.getDob() != null) dob.setValue(existingStudent.getDob());
+            email.setValue(existingStudent.getEmail() != null ? existingStudent.getEmail() : "");
+            classBox.setValue(existingStudent.getClazz());
+        }
+
+        Button save = new Button(existingStudent == null ? "Lưu mới" : "Cập nhật", e -> {
+            if (name.isEmpty()) {
+                Notification.show("Vui lòng nhập tên!");
+                return;
+            }
+
+            Student s = (existingStudent != null) ? existingStudent : new Student();
+            s.setFullName(name.getValue());
+            s.setDob(dob.getValue());
+            s.setEmail(email.getValue());
+            s.setClazz(classBox.getValue());
+
+            studentService.save(s);
+            Notification.show("Thao tác thành công!");
             dialog.close();
         });
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         form.add(mssv, name, dob, email, classBox);
         container.add(form, save);
     }
 
-    private void renderFullClassForm(VerticalLayout container, Dialog dialog) {
+    // --- FORM 2: LỚP HỌC ---
+    private void renderFullClassForm(VerticalLayout container, Dialog dialog, ClassEntity existingClass) {
         FormLayout form = new FormLayout();
-        TextField classId = new TextField("Mã lớp học");
         TextField className = new TextField("Tên lớp học");
 
         ComboBox<Major> majorBox = new ComboBox<>("Ngành học");
         majorBox.setItems(majorService.findAll());
         majorBox.setItemLabelGenerator(Major::getMajorName);
 
-        Button save = new Button("Tạo Lớp học", e -> {
-            Notification.show("Đã tạo lớp học thành công!");
+        if (existingClass != null) {
+            className.setValue(existingClass.getClassName());
+            majorBox.setValue(existingClass.getMajor());
+        }
+
+        Button save = new Button("Lưu", e -> {
+            ClassEntity c = (existingClass != null) ? existingClass : new ClassEntity();
+            c.setClassName(className.getValue());
+            c.setMajor(majorBox.getValue());
+
+            classService.save(c);
+            Notification.show("Lớp học đã được cập nhật!");
             dialog.close();
         });
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        form.add(classId, className, majorBox);
+
+        form.add(className, majorBox);
         container.add(form, save);
     }
 
-    // --- FORM 3: ĐĂNG KÝ HỌC PHẦN (LỌC THEO NGÀY ĐĂNG KÝ) ---
+    // --- FORM 3: ĐĂNG KÝ HỌC PHẦN ---
     private void renderFullEnrollmentForm(VerticalLayout container, Dialog dialog) {
         FormLayout form = new FormLayout();
 
-        // 1. Chọn Sinh viên
         ComboBox<Student> studentBox = new ComboBox<>("Chọn Sinh viên");
         studentBox.setItems(studentService.findAll());
         studentBox.setItemLabelGenerator(Student::getFullName);
 
-        // 2. Chọn Ngày đăng ký
         DatePicker enrollDate = new DatePicker("Ngày đăng ký");
         enrollDate.setValue(LocalDate.now());
 
-        // 3. Chọn Lớp học phần
         ComboBox<CourseSection> sectionBox = new ComboBox<>("Lớp học phần");
         sectionBox.setPlaceholder("Chọn ngày để lọc lớp...");
+        sectionBox.setItemLabelGenerator(section ->
+                (section.getSubject() != null ? section.getSubject().getSubjectName() : "N/A") + " (ID: " + section.getCourse_section_id() + ")");
 
-        // Hiển thị: Tên môn (lấy từ Subject) + Mã lớp
-        sectionBox.setItemLabelGenerator(section -> {
-            String subjectTitle = (section.getSubject() != null) ?
-                    section.getSubject().getSubjectName() : "Chưa có môn";
-            return subjectTitle + " (Mã: " + section.getCourse_section_id() + ")";
-        });
-
-        // --- LOGIC LỌC ĐỘNG THEO NGÀY ---
+        // Logic lọc động
         Runnable refreshSections = () -> {
             LocalDate selectedDate = enrollDate.getValue();
             if (selectedDate != null) {
-                // Gọi hàm lọc lớp có startDate > selectedDate từ Service
                 List<CourseSection> available = courseSectionService.findSectionsStartingAfter(selectedDate);
                 sectionBox.setItems(available);
-                if (available.isEmpty()) {
-                    sectionBox.setPlaceholder("Không có lớp nào khai giảng sau ngày này");
-                }
             }
         };
 
-        // Lắng nghe thay đổi ngày để nạp lại danh sách lớp
         enrollDate.addValueChangeListener(e -> refreshSections.run());
-
-        // Chạy lọc lần đầu với ngày hôm nay
         refreshSections.run();
 
         Button save = new Button("Xác nhận Đăng ký", e -> {
-            if (studentBox.getValue() != null && sectionBox.getValue() != null) {
-                Notification.show("Đăng ký thành công cho SV: " + studentBox.getValue().getFullName());
+            Student s = studentBox.getValue();
+            CourseSection cs = sectionBox.getValue();
+
+            if (s != null && cs != null) {
+                Enrollment en = new Enrollment();
+                en.setStudent(s);
+                en.setCourseSection(cs);
+                en.setEnrollmentDate(enrollDate.getValue());
+
+                enrollmentService.save(en); // Thực hiện lưu vào DB
+                Notification.show("Đăng ký thành công cho: " + s.getFullName());
                 dialog.close();
             } else {
-                Notification.show("Vui lòng chọn đầy đủ thông tin!");
+                Notification.show("Vui lòng chọn đầy đủ SV và Lớp HP!");
             }
         });
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
         form.add(studentBox, enrollDate, sectionBox);
         container.add(form, save);
-
     }
 }

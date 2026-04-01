@@ -2,6 +2,7 @@ package com.example.student_management.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "subject")
@@ -15,7 +16,8 @@ public class Subject {
 
     private Integer credits;
 
-    @OneToMany(mappedBy = "subject")
+    @OneToMany(mappedBy = "subject",fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<com.example.student_management.entity.CourseSection> courseSections;
 
     // Getter & Setter

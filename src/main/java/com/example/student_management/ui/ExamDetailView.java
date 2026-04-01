@@ -78,60 +78,48 @@ public class ExamDetailView extends VerticalLayout implements BeforeEnterObserve
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Long id = Long.parseLong(event.getRouteParameters().get("id").get());
+        event.getRouteParameters().get("id").ifPresent(idStr -> {
+            Long id = Long.parseLong(idStr);
+            Exam exam = examService.getExamById(id);
 
-        Exam exam = examService.getExamById(id);
-        removeAll();
+            if (exam != null) {
+                CourseSection cs = exam.getCourseSection();
 
-        CourseSection cs = exam.getCourseSection();
+                // 🔹 Cập nhật thông tin chi tiết
+                infoContainer.removeAll();
+                infoContainer.setPadding(false);
 
-        // 🔹 NAV + TITLE (phải add lại vì removeAll)
-        HorizontalLayout navRow = new HorizontalLayout();
-        navRow.setWidthFull();
-        navRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
+                String subject = (cs != null && cs.getSubject() != null) ? cs.getSubject().getSubjectName() : "N/A";
 
-        Button backBtn = new Button("Quay lại", new Icon(VaadinIcon.ARROW_BACKWARD));
-        backBtn.addClickListener(e ->
-                UI.getCurrent().getPage().executeJs("window.history.back();")
-        );
+                // LẤY GIÁM THỊ TỪ EXAM (Thay vì Teacher từ CourseSection)
+                String supervisorName = (exam.getSupervisor() != null) ? exam.getSupervisor().getsName() : "Chưa phân công";
 
-        Button homeBtn = new Button("Trang chủ", new Icon(VaadinIcon.HOME));
-        homeBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        homeBtn.addClickListener(e -> UI.getCurrent().navigate(""));
+                String room = exam.getRoom();
+                String date = (exam.getExamDate() != null) ? exam.getExamDate().toString() : "N/A";
+                int count = (cs != null && cs.getEnrollments() != null) ? cs.getEnrollments().size() : 0;
 
-        navRow.add(backBtn, homeBtn);
+                infoContainer.add(
+                        new H3("Thông tin chung"),
+                        new Span("📖 Môn học: " + subject),
+                        new Span("👨‍🏫 Giám thị coi thi: " + supervisorName), // Đã sửa ở đây
+                        new Span("🏫 Phòng thi: " + room),
+                        new Span("📅 Ngày thi: " + date),
+                        new Span("👥 Sĩ số đăng ký: " + count + " sinh viên")
+                );
 
-        H2 title = new H2("Chi tiết Lịch thi");
+                // 🔹 Cập nhật danh sách sinh viên
+                if (cs != null && cs.getEnrollments() != null) {
+                    List<Student> students = cs.getEnrollments()
+                            .stream()
+                            .map(Enrollment::getStudent)
+                            .collect(Collectors.toList());
 
-        // 🔹 INFO
-        infoContainer.removeAll();
-        infoContainer.setPadding(false);
-
-        String subject = cs.getSubject() != null ? cs.getSubject().getSubjectName() : "N/A";
-        String teacher = cs.getTeacher() != null ? cs.getTeacher().getFullName() : "Chưa có";
-        String room = exam.getRoom();
-        String date = exam.getExamDate().toString();
-
-        infoContainer.add(
-                new Span("📖 Môn học: " + subject),
-                new Span("👨‍🏫 Giảng viên coi thi: " + teacher),
-                new Span("🏫 Phòng thi: " + room),
-                new Span("📅 Ngày thi: " + date),
-                new Span("👥 Sĩ số: " + (cs.getEnrollments() != null ? cs.getEnrollments().size() : 0))
-        );
-
-        // 🔹 STUDENT LIST
-        if (cs.getEnrollments() != null) {
-            List<Student> students = cs.getEnrollments()
-                    .stream()
-                    .map(Enrollment::getStudent)
-                    .collect(Collectors.toList());
-
-            studentGrid.setItems(students);
-        }
-
-        add(navRow, title, infoContainer, studentGrid);
-
-        expand(studentGrid); // 🔥 GRID CHIẾM HẾT PHẦN CÒN LẠI
+                    studentGrid.setItems(students);
+                }
+            } else {
+                // Nếu không tìm thấy Exam, quay về trang danh sách
+                event.forwardTo(ExamListView.class);
+            }
+        });
     }
 }

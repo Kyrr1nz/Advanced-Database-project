@@ -2,6 +2,7 @@ package com.example.student_management.entity;
 
 import jakarta.persistence.*;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class ClassEntity {
@@ -15,7 +16,8 @@ public class ClassEntity {
     @JoinColumn(name = "major_id")
     private Major major;
 
-    @OneToMany(mappedBy = "clazz", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "clazz", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Student> students;
 
     // Getters and Setters

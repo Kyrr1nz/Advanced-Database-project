@@ -15,7 +15,7 @@ public class ExamService {
         this.repository = repository;
     }
     public Exam getExamById(Long id) {
-        return repository.findById(id).orElse(null);
+        return repository.findByIdWithDetails(id).orElse(null);
     }
     public List<Exam> getAllExams() {
         return repository.findAll();

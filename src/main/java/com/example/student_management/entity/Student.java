@@ -3,6 +3,7 @@ package com.example.student_management.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "student")
@@ -26,7 +27,8 @@ public class Student {
     private com.example.student_management.entity.ClassEntity clazz;
 
     // Nối với Enrollment để đi đến Subject/Teacher ở Layer 2
-    @OneToMany(mappedBy = "student")
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<com.example.student_management.entity.Enrollment> enrollments;
 
     public Student() {

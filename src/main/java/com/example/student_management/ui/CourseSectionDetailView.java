@@ -80,7 +80,7 @@ public class CourseSectionDetailView extends VerticalLayout implements HasUrlPar
 
     @Override
     public void setParameter(BeforeEvent event, Long sectionId) {
-        csRepo.findById(sectionId).ifPresent(section -> {
+        csRepo.findByIdWithStudents(sectionId).ifPresent(section -> {
             infoContainer.removeAll();
             infoContainer.setPadding(false);
 
