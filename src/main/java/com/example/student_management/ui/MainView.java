@@ -42,9 +42,6 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         getStyle().set("background-color", "#f0f2f5")
                 .set("font-family", "'Inter', sans-serif");
 
-        // =========================
-        // 🔝 TOP BAR
-        // =========================
         HorizontalLayout topBar = new HorizontalLayout();
         topBar.setWidthFull();
         topBar.getStyle()
@@ -57,12 +54,9 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         H2 logo = new H2("🎓 SMS Dashboard");
         logo.getStyle().set("margin", "0").set("color", "#1a73e8").set("font-size", "20px");
 
-        Span userRole = new Span("Admin Group 7");
+        Span userRole = new Span("Administrator");
         userRole.getStyle().set("color", "#5f6368").set("font-weight", "500");
 
-        // =========================
-        // 🔍 SEARCH (GIỮ NGUYÊN LOGIC)
-        // =========================
         globalSearch = new ComboBox<>("");
         globalSearch.setPlaceholder("Tìm sinh viên, lớp hoặc môn học...");
         globalSearch.setWidth("400px");
@@ -129,9 +123,6 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
             }
         });
 
-        // =========================
-        // 🔓 LOGOUT
-        // =========================
         Button logoutBtn = new Button("Logout", e -> {
             UI.getCurrent().getSession().setAttribute("user", null);
             UI.getCurrent().navigate("login");
@@ -144,9 +135,6 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         topBar.add(logo, globalSearch, userRole, logoutBtn);
         add(topBar);
 
-        // =========================
-        // 📦 CONTENT
-        // =========================
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setMaxWidth("1400px");
@@ -189,7 +177,6 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         add(content);
     }
 
-    // ✅ LOGIN GUARD CHUẨN (KHÔNG BUG REFRESH)
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         Object user = UI.getCurrent().getSession().getAttribute("user");

@@ -23,12 +23,10 @@ public class CourseSectionService {
         return subjectRepository.findAll();
     }
 
-    // Lấy tất cả các lớp
     public List<CourseSection> findAllSections() {
         return courseSectionRepository.findAll();
     }
 
-    // MỚI: Lọc các lớp chưa bắt đầu học (Logic nghiệp vụ)
     public List<CourseSection> findAvailableSections() {
         LocalDate today = LocalDate.now();
         return courseSectionRepository.findAll().stream()
